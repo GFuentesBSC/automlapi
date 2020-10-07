@@ -15,7 +15,7 @@ setup(
           'PyPDF2',
           'boto3',
           'botocore',
-          'MySQLdb',
+          'mysqlclient',
           'hmac',
           'hashlib',
       ],
