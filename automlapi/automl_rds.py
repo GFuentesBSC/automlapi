@@ -1,0 +1,414 @@
+import MySQLdb as mysql
+import os
+from .automl import BD_HOST, BD_PASS
+
+##################### RDS #############################
+def get_projects_of_user(user_pk):
+
+	project_names = []
+
+	try:
+		db = mysql.connect(host=BD_HOST,
+							 database='ebdb',
+							 user='admin',
+							 password=BD_PASS)
+		query = "SELECT proj_name FROM automlapp_project WHERE user_id = " + str(user_pk) + ";"
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchall()
+		for elem in response:
+			project_names.append(elem[0])
+	except:
+		print("get_projects_of_user - ERROR")
+	finally:
+		cursor.close()
+		db.close()
+	return project_names
+
+def get_user_pk_by_username_password(username, password):
+	pk = -1
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = "SELECT id FROM automlapp_user WHERE username = \"" + username + "\" AND password = \"" + password + "\""
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		pk = response[0]
+	except:
+		print("get_user_pk_by_username_password - ERROR")
+	finally:
+		db.close()
+	return pk
+
+def get_project_pk_by_user_pk_project_name(user_pk, project_name):
+	pk = -1
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = "SELECT id FROM automlapp_project WHERE user_id = " + str(user_pk) + " AND proj_name = \"" + project_name + "\""
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		pk = response[0]
+	except Exception as e:
+		print("get_project_pk_by_user_pk_project_name - ERROR " + str(e))
+	finally:
+		db.close()
+	return pk
+
+def get_project_name_by_project_pk(project_pk):
+	name = ""
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f"SELECT proj_name FROM automlapp_project WHERE id = {project_pk};"
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		name = str(response[0])
+	except Exception as e:
+		print("get_project_name_by_project_pk : ERROR : " + str(e))
+	finally:
+		db.close()
+	return name
+
+def get_document_count_by_project_id_and_label(project_id, label):
+	count = 0
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f"SELECT COUNT(*) FROM automlapp_file WHERE project_id = {project_id} AND label = {label};"
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		count = int(response[0])
+	except Exception as e:
+		print("get_document_count_by_project_id_and_label : ERROR : " + str(e))
+	finally:
+		db.close()
+	return count
+
+def insert_file(file_path, project_name, user_pk, npages=1):
+	inserted = False
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+
+		file_name, file_ext = os.path.splitext(os.path.basename(file_path))
+		file_ext = file_ext.replace('.','')
+		project_pk = get_project_pk_by_user_pk_project_name(user_pk, project_name)
+		query = '''INSERT INTO automlapp_file(file_type, file_name, tag_manual, uri, project_id, trained, npages)
+							VALUES("{}","{}",{},"{}",{},{},{})'''.format(file_ext, file_name, 0, file_path, project_pk, 0, npages)
+		cursor = db.cursor()
+		cursor.execute(query)
+		if cursor.lastrowid:
+			inserted = True
+		db.commit()
+	except mysql.IntegrityError:
+		pass
+	except Exception as e:
+		print("insert_file - ERROR " + str(e))
+	finally:
+		db.close()
+	return inserted
+
+def insert_files_to_rds(paths, project_name, user_pk):
+	inserted = False
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		project_pk = get_project_pk_by_user_pk_project_name(user_pk, project_name)
+		cursor = db.cursor()
+
+		for file_path in paths:
+			file_name, file_ext = os.path.splitext(os.path.basename(file_path))
+			file_ext = file_ext.replace('.','')
+			query = '''INSERT INTO automlapp_file(file_type, file_name, tag_manual, uri, project_id, trained)
+								VALUES("{}","{}",{},"{}",{},{})'''.format(file_ext, file_name, 0, file_path, project_pk, 0)
+			cursor.execute(query)
+			print(f"inserted file {file_path} to RDS")
+		db.commit()
+	except mysql.IntegrityError:
+		pass
+	except Exception as e:
+		print("insert_file - ERROR " + str(e))
+	finally:
+		db.close()
+	return True
+
+def update_job_result(job_id, result):
+	result = round(result, 2)
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+
+		query = f'UPDATE automlapp_job SET result = {result} where id = {job_id};'
+		cursor = db.cursor()
+		cursor.execute(query)
+		db.commit()
+	except Exception as e:
+		print("update_job_result - ERROR " + str(e))
+	finally:
+		db.close()
+
+def get_png_uri_from_page_id(page_id):
+	uri = None
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f"SELECT png_uri FROM automlapp_page WHERE id = {page_id};"
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		uri = response[0]
+	except Exception as e:
+		print("get_png_uri_from_page_id - ERROR " + str(e))
+	finally:
+		db.close()
+	return uri
+
+def get_file_uri_and_label_from_id(file_id):
+	uri = label = None
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f"SELECT uri, label FROM automlapp_file WHERE id = {file_id};"
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		uri = response[0]
+		label = response[1]
+	except Exception as e:
+		print("get_file_uri_from_id : ERROR : " + str(e))
+	finally:
+		db.close()
+	return uri, label
+
+def insert_page(image_path_s3, file_id, label):
+	pk = -1
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+
+		query = f'INSERT INTO automlapp_page(png_uri, file_id, label) VALUES ("{image_path_s3}", {file_id}, {label})'
+		cursor = db.cursor()
+		cursor.execute(query)
+		pk = cursor.lastrowid
+		db.commit()
+	except mysql.IntegrityError:
+		pass
+	except Exception as e:
+		print("insert_page : ERROR : " + str(e))
+	finally:
+		db.close()
+	return pk
+
+def get_trained_model_path(project_id):
+	path = None
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f"SELECT trained_model_path FROM automlapp_model WHERE project_id = {project_id};"
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		path = response[0]
+	except Exception as e:
+		print("get_trained_model_path : ERROR : " + str(e))
+	finally:
+		db.close()
+	return path
+
+def get_npages_to_preprocess_for_project(project_id):
+	npages = 0
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f'SELECT SUM(npages) FROM automlapp_file WHERE project_id = {project_id} AND trained = 0 AND preprocessed = 0;'
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		if response[0] != None:
+			npages = response[0]
+	except Exception as e:
+		print("get_npages_to_preprocess_for_project : ERROR : " + str(e))
+	finally:
+		db.close()
+	return int(npages)
+
+def all_pages_processed_for_file_ids(file_ids):
+	all_processed = False
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query1 = f'SELECT SUM(npages) FROM automlapp_file WHERE id IN ({str(file_ids)[1:-1]});'
+		query2 = f'SELECT COUNT(*) FROM automlapp_page WHERE file_id IN ({str(file_ids)[1:-1]}) AND ocr_uri IS NOT NULL;'
+		cursor = db.cursor()
+		cursor.execute(query1)
+		total_pages = int(cursor.fetchone()[0])
+		cursor.execute(query2)
+		processed_pages = int(cursor.fetchone()[0])
+		all_processed = total_pages == processed_pages
+	except Exception as e:
+		print("all_pages_processed_for_file_ids : ERROR : " + str(e))
+	finally:
+		db.close()
+	return all_processed
+
+def set_files_preprocessed(file_ids):
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f'UPDATE automlapp_file SET preprocessed = 1 WHERE id IN ({str(file_ids)[1:-1]});'
+		cursor = db.cursor()
+		cursor.execute(query)
+		db.commit()
+	except Exception as e:
+		print("set_files_preprocessed : ERROR : " + str(e))
+	finally:
+		db.close()
+
+def get_file_ids_to_preprocess_for_project(project_id):
+	ids = []
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f'SELECT id FROM automlapp_file WHERE project_id = {project_id} AND trained = 0 AND preprocessed = 0;'
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchall()
+		for row in response:
+			ids.append(row[0])
+	except Exception as e:
+		print("get_file_ids_to_preprocess_for_project : ERROR : " + str(e))
+	finally:
+		db.close()
+	return ids
+
+def get_pages_of_files(file_ids):
+	ids = []
+	png_uris = []
+	ocr_uris = []
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f'SELECT label, png_uri, ocr_uri FROM automlapp_page WHERE file_id IN ({str(file_ids)[1:-1]});'
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchall()
+		for row in response:
+			ids.append(row[0])
+			png_uris.append(row[1])
+			ocr_uris.append(row[2])
+	except Exception as e:
+		print("get_pages_of_files : ERROR : " + str(e))
+	finally:
+		db.close()
+	return ids, png_uris, ocr_uris
+
+def delete_file_from_rds(username, file_uri):
+
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+
+		query = f"DELETE FROM automlapp_file WHERE uri ='{file_uri}';"
+		cursor = db.cursor()
+		cursor.execute(query)
+		db.commit()
+	except Exception as e:
+		print("delete_file_from_rds : ERROR : " + str(e))
+	finally:
+		db.close()
+
+def update_ocr_uri_by_page_id(page_id, ocr_uri):
+	print(f"update_ocr_uri_by_page_id : INFO : page_id = {page_id}, ocr_uri = {ocr_uri}")
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+
+		query = f'UPDATE automlapp_page SET ocr_uri = "{ocr_uri}" where id = {page_id};'
+		cursor = db.cursor()
+		cursor.execute(query)
+		db.commit()
+	except Exception as e:
+		print("update_ocr_uri_by_page_id : ERROR : " + str(e))
+	finally:
+		db.close()
+
+def create_training_job(experiment_id: int, output_path: str) -> int:
+	pk = -1
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+
+		query = f'INSERT INTO automlapp_job(status, experiment_id, result, job_type, output_path) VALUES ("CREATED", {experiment_id}, 0, "TRAIN", "{output_path}");'
+		cursor = db.cursor()
+		cursor.execute(query)
+		pk = cursor.lastrowid
+		db.commit()
+	except mysql.IntegrityError:
+		pass
+	except Exception as e:
+		print("create_training_job : ERROR : " + str(e))
+	finally:
+		db.close()
+	return pk
+
+def get_file_ids_preprocessed_untrained(project_id):
+	ids = []
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f'SELECT id FROM automlapp_file WHERE project_id = {project_id} AND trained = 0 AND preprocessed = 1;'
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchall()
+		for row in response:
+			ids.append(int(row[0]))
+	except Exception as e:
+		print("get_file_ids_preprocessed_untrained : ERROR : " + str(e))
+	finally:
+		db.close()
+	return ids
