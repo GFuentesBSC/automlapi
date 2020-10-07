@@ -4,7 +4,6 @@ from .automl_cognito import *
 from .automl_rds import *
 from .automl_s3 import *
 import getpass
-from django.shortcuts import get_object_or_404
 import os
 from tqdm import tqdm
 
