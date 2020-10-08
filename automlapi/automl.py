@@ -12,7 +12,12 @@ BD_PASS = ''
 
 def init():
 
-	with open(os.path.join(expanduser("~"),'automlapi.config'), 'r') as f:
+	try:
+		config_file_path = os.environ['AUTOMLAPI_CONFIG_FILE_PATH']
+	except Exception as e:
+		config_file_path = os.path.join(expanduser("~"),'automlapi.config')
+
+	with open(config_file_path, 'r') as f:
 		config_string = f.read()
 		j = json.loads(config_string)
 		global AWS_ACC_KEY_ID
