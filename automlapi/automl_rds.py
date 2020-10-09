@@ -1,5 +1,6 @@
 import MySQLdb as mysql
 import os
+import json
 from .automl import BD_HOST, BD_PASS
 
 ##################### RDS #############################
@@ -412,3 +413,44 @@ def get_file_ids_preprocessed_untrained(project_id):
 	finally:
 		db.close()
 	return ids
+
+def get_model_hyperparams(model_id):
+	hyperparams = {}
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f'SELECT hyperparams FROM automlapp_modelversion WHERE id = {model_id};'
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		if response[0] != None:
+			hyperparams_json = json.loads(response[0])
+			for key in hyperparams_json:
+    			hyperparams[key.upper()] = hyperparams_json[key]
+	except Exception as e:
+		print("get_model_hyperparams : ERROR : " + str(e))
+	finally:
+		db.close()
+	return hyperparams
+
+
+def get_trained_model_path(model_id):
+	path = ''
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f'SELECT trained_model_path FROM automlapp_modelversion WHERE id = {model_id};'
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		if response[0] != None:
+			path = response[0]
+	except Exception as e:
+		print("get_trained_model_path : ERROR : " + str(e))
+	finally:
+		db.close()
+	return path
