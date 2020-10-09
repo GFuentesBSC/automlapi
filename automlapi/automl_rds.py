@@ -428,7 +428,7 @@ def get_model_hyperparams(model_id):
 		if response[0] != None:
 			hyperparams_json = json.loads(response[0])
 			for key in hyperparams_json:
-    			hyperparams[key.upper()] = hyperparams_json[key]
+				hyperparams[key.upper()] = hyperparams_json[key]
 	except Exception as e:
 		print("get_model_hyperparams : ERROR : " + str(e))
 	finally:
