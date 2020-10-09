@@ -454,3 +454,22 @@ def get_trained_model_path(model_id):
 	finally:
 		db.close()
 	return path
+
+def get_trainings_for_project(project_id):
+	trainings = 0
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f'SELECT trainings FROM automlapp_project WHERE id = {project_id};'
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		if response[0] != None:
+			trainings = int(response[0])
+	except Exception as e:
+		print("get_trainings_for_project : ERROR : " + str(e))
+	finally:
+		db.close()
+	return trainings
