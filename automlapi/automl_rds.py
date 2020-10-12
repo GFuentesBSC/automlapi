@@ -506,7 +506,7 @@ def get_model_ids_for_project(project_id):
 		query = f'SELECT id FROM automlapp_modelversion WHERE project_id = {project_id};'
 		cursor = db.cursor()
 		cursor.execute(query)
-		response = cursor.fetchone()
+		response = cursor.fetchall()
 		for row in response:
 			ids.append(int(row[0]))
 	except Exception as e:
