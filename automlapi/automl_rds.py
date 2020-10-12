@@ -480,7 +480,7 @@ def get_raw_model_name_of_model_version(model_id):
 		db = mysql.connect(host=BD_HOST,
 							database='ebdb',
 							user='admin',
-							password=password_rds)
+							password=BD_PASS)
 		query1 = f'SELECT raw_model_id FROM automlapp_modelversion WHERE id = {model_id};'
 		cursor = db.cursor()
 		cursor.execute(query1)
@@ -502,7 +502,7 @@ def get_model_ids_for_project(project_id):
 		db = mysql.connect(host=BD_HOST,
 							database='ebdb',
 							user='admin',
-							password=password_rds)
+							password=BD_PASS)
 		query = f'SELECT id FROM automlapp_modelversion WHERE project_id = {project_id};'
 		cursor = db.cursor()
 		cursor.execute(query)
@@ -521,7 +521,7 @@ def get_training_image_tag_for_model_version(model_id):
 		db = mysql.connect(host=BD_HOST,
 							database='ebdb',
 							user='admin',
-							password=password_rds)
+							password=BD_PASS)
 		cursor = db.cursor()
 		query1 = f'select raw_model_id from automlapp_modelversion WHERE id = {model_id};'
 		cursor.execute(query1)
