@@ -83,6 +83,29 @@ def configure_instance(instance_type, environment):
     }
 	return containerOverrides
 
+
+def submit_train_job(params):
+	print(f'submit_train_job : INFO : received params = {params}')
+	environment = []
+
+	for param in params:
+		environment.append({'name': param, 'value': str(params[param])})
+
+	containerOverrides = {'environment': environment}
+
+	response = client_batch.submit_job(
+		jobName=str(params['JOB_ID']),
+		jobQueue='train-queue',
+		jobDefinition=params['TRAINING_IMAGE'],
+		parameters={},
+		containerOverrides=containerOverrides,
+		timeout={
+        	'attemptDurationSeconds': params['TIMEOUT']
+    	}
+	)
+
+	return response
+
 def submit_job(params):
 	print(f'submit_job : INFO : received params = {params}')
 	environment = []

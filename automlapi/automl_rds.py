@@ -374,7 +374,7 @@ def update_ocr_uri_by_page_id(page_id, ocr_uri):
 	finally:
 		db.close()
 
-def create_training_job(experiment_id: int, output_path: str) -> int:
+def create_training_job(model_id: int, output_path: str) -> int:
 	pk = -1
 	try:
 		db = mysql.connect(host=BD_HOST,
@@ -382,7 +382,7 @@ def create_training_job(experiment_id: int, output_path: str) -> int:
 							user='admin',
 							password=BD_PASS)
 
-		query = f'INSERT INTO automlapp_job(status, experiment_id, result, job_type, output_path) VALUES ("CREATED", {experiment_id}, 0, "TRAIN", "{output_path}");'
+		query = f'INSERT INTO automlapp_job(status, model_id, result, job_type, output_path) VALUES ("CREATED", {model_id}, 0, "TRAIN", "{output_path}");'
 		cursor = db.cursor()
 		cursor.execute(query)
 		pk = cursor.lastrowid
