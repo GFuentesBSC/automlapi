@@ -473,3 +473,66 @@ def get_trainings_for_project(project_id):
 	finally:
 		db.close()
 	return trainings
+
+def get_raw_model_name_of_model_version(model_id):
+	raw_model_name = ''
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=password_rds)
+		query1 = f'SELECT raw_model_id FROM automlapp_modelversion WHERE id = {model_id};'
+		cursor = db.cursor()
+		cursor.execute(query1)
+		response = cursor.fetchone()
+		raw_model_id = int(response[0])
+		query2 = f'SELECT name FROM automlapp_rawmodel WHERE id = {raw_model_id};'
+		cursor.execute(query2)
+		response = cursor.fetchone()
+		raw_model_name = str(response[0])
+	except Exception as e:
+		print("get_raw_model_name_of_model_version : ERROR : " + str(e))
+	finally:
+		db.close()
+	return raw_model_name
+
+def get_model_ids_for_project(project_id):
+	ids = []
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=password_rds)
+		query = f'SELECT id FROM automlapp_modelversion WHERE project_id = {project_id};'
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		for row in response:
+			ids.append(int(row[0]))
+	except Exception as e:
+		print("get_model_ids_for_project : ERROR : " + str(e))
+	finally:
+		db.close()
+	return ids
+
+def get_training_image_tag_for_model_version(model_id):
+	training_image = ''
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=password_rds)
+		cursor = db.cursor()
+		query1 = f'select raw_model_id from automlapp_modelversion WHERE id = {model_id};'
+		cursor.execute(query1)
+		response = cursor.fetchone()
+		raw_model_id = int(response[0])
+		query2 = f'SELECT tag FROM automlapp_trainingimage WHERE id IN (SELECT training_image_id FROM automlapp_rawmodel WHERE id = {raw_model_id});'
+		cursor.execute(query2)
+		response = cursor.fetchone()
+		training_image = str(response[0])
+	except Exception as e:
+		print("get_training_image_tag_for_model_version : ERROR : " + str(e))
+	finally:
+		db.close()
+	return training_image
