@@ -62,6 +62,25 @@ def get_project_pk_by_user_pk_project_name(user_pk, project_name):
 		db.close()
 	return pk
 
+def get_project_id_by_model_id(model_id):
+	project_id = -1
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f"SELECT project_id FROM automlapp_modelversion WHERE id = {model_id};"
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		if response[0] != None:
+			project_id = int(response[0])
+	except Exception as e:
+		print("get_project_id_by_model_id - ERROR " + str(e))
+	finally:
+		db.close()
+	return project_id
+
 def get_project_name_by_project_pk(project_pk):
 	name = ""
 	try:
@@ -377,12 +396,13 @@ def update_ocr_uri_by_page_id(page_id, ocr_uri):
 def create_training_job(model_id: int, output_path: str) -> int:
 	pk = -1
 	try:
+		project_id = get_project_id_by_model_id(model_id)
 		db = mysql.connect(host=BD_HOST,
 							database='ebdb',
 							user='admin',
 							password=BD_PASS)
 
-		query = f'INSERT INTO automlapp_job(status, model_id, result, job_type, output_path) VALUES ("CREATED", {model_id}, 0, "TRAIN", "{output_path}");'
+		query = f'INSERT INTO automlapp_job(status, model_id, result, job_type, output_path, project_id) VALUES ("CREATED", {model_id}, 0, "TRAIN", "{output_path}", {project_id});'
 		cursor = db.cursor()
 		cursor.execute(query)
 		pk = cursor.lastrowid
