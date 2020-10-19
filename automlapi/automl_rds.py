@@ -576,7 +576,7 @@ def get_best_model_id_and_accuracy_for_project(project_id):
 		print("get_best_model_for_project : ERROR : " + str(e))
 	finally:
 		db.close()
-	return id, acc
+	return id, ac
 
 def get_training_image_tag_for_model_version(model_id):
 	training_image = ''
