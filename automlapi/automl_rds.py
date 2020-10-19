@@ -118,7 +118,7 @@ def get_document_count_by_project_id_and_label(project_id, label):
 	return count
 
 def insert_file(file_path, project_name, user_pk, npages=1):
-	inserted = False
+	pk = -1
 	try:
 		db = mysql.connect(host=BD_HOST,
 							database='ebdb',
@@ -132,16 +132,15 @@ def insert_file(file_path, project_name, user_pk, npages=1):
 							VALUES("{}","{}",{},"{}",{},{},{})'''.format(file_ext, file_name, 0, file_path, project_pk, 0, npages)
 		cursor = db.cursor()
 		cursor.execute(query)
-		if cursor.lastrowid:
-			inserted = True
+		pk = cursor.lastrowid
 		db.commit()
 	except mysql.IntegrityError:
 		pass
 	except Exception as e:
-		print("insert_file - ERROR " + str(e))
+		print("insert_file : ERROR :  " + str(e))
 	finally:
 		db.close()
-	return inserted
+	return pk
 
 def insert_files_to_rds(paths, project_name, user_pk):
 	inserted = False
@@ -613,5 +612,21 @@ def update_trained_model_path(model_id, trained_model_path):
 		db.commit()
 	except Exception as e:
 		print("update_trained_model_path : ERROR : " + str(e))
+	finally:
+		db.close()
+
+def tag_file(file_id, label):
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+
+		query = f'UPDATE automlapp_file SET label = {label} where id = {file_id};'
+		cursor = db.cursor()
+		cursor.execute(query)
+		db.commit()
+	except Exception as e:
+		print("tag_file : ERROR : " + str(e))
 	finally:
 		db.close()
