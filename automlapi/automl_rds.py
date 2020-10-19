@@ -281,6 +281,25 @@ def get_npages_to_preprocess_for_project(project_id):
 		db.close()
 	return int(npages)
 
+def get_npages_of_file(file_id):
+	npages = 0
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f'SELECT npages FROM automlapp_file WHERE id = {file_id};'
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		if response[0] != None:
+			npages = response[0]
+	except Exception as e:
+		print("get_npages_of_file : ERROR : " + str(e))
+	finally:
+		db.close()
+	return int(npages)
+
 def all_pages_processed_for_file_ids(file_ids):
 	all_processed = False
 	try:
@@ -535,6 +554,30 @@ def get_model_ids_for_project(project_id):
 		db.close()
 	return ids
 
+def get_best_model_id_and_accuracy_for_project(project_id):
+	id = -1
+	ac = 0.0
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f'SELECT id, accuracy FROM automlapp_modelversion WHERE project_id = {project_id};'
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchall()
+		for row in response:
+			next_id = int(row[0])
+			next_ac = float(row[1])
+			if next_ac >= ac:
+				id = next_id
+				ac = next_ac
+	except Exception as e:
+		print("get_best_model_for_project : ERROR : " + str(e))
+	finally:
+		db.close()
+	return id, acc
+
 def get_training_image_tag_for_model_version(model_id):
 	training_image = ''
 	try:
@@ -556,3 +599,19 @@ def get_training_image_tag_for_model_version(model_id):
 	finally:
 		db.close()
 	return training_image
+
+def update_trained_model_path(model_id, trained_model_path):
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+
+		query = f'UPDATE automlapp_modelversion SET trained_model_path = "{trained_model_path}" where id = {model_id};'
+		cursor = db.cursor()
+		cursor.execute(query)
+		db.commit()
+	except Exception as e:
+		print("update_trained_model_path : ERROR : " + str(e))
+	finally:
+		db.close()
