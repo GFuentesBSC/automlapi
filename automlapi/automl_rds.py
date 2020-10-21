@@ -128,8 +128,8 @@ def insert_file(file_path, project_name, user_pk, npages=1):
 		file_name, file_ext = os.path.splitext(os.path.basename(file_path))
 		file_ext = file_ext.replace('.','')
 		project_pk = get_project_pk_by_user_pk_project_name(user_pk, project_name)
-		query = '''INSERT INTO automlapp_file(file_type, file_name, tag_manual, uri, project_id, trained, npages)
-							VALUES("{}","{}",{},"{}",{},{},{})'''.format(file_ext, file_name, 0, file_path, project_pk, 0, npages)
+		query = '''INSERT INTO automlapp_file(file_type, file_name, uri, project_id, trained, npages)
+							VALUES("{}","{}","{}",{},{},{})'''.format(file_ext, file_name, file_path, project_pk, 0, npages)
 		cursor = db.cursor()
 		cursor.execute(query)
 		pk = cursor.lastrowid
@@ -310,10 +310,14 @@ def all_pages_processed_for_file_ids(file_ids):
 		query2 = f'SELECT COUNT(*) FROM automlapp_page WHERE file_id IN ({str(file_ids)[1:-1]}) AND ocr_uri IS NOT NULL;'
 		cursor = db.cursor()
 		cursor.execute(query1)
-		total_pages = int(cursor.fetchone()[0])
-		cursor.execute(query2)
-		processed_pages = int(cursor.fetchone()[0])
-		all_processed = total_pages == processed_pages
+		result1 = cursor.fetchone()[0]
+		if result1:
+			total_pages = int(result1)
+			cursor.execute(query2)
+			result2 = cursor.fetchone()[0]
+			if result2:
+				processed_pages = int(result2)
+				all_processed = total_pages == processed_pages
 	except Exception as e:
 		print("all_pages_processed_for_file_ids : ERROR : " + str(e))
 	finally:
