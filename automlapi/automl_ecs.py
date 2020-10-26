@@ -15,3 +15,15 @@ def update_flask_service_instances(service, num_instances):
         desiredCount=num_instances
     )
     return response
+
+def services_ready(cluster, service_list):
+    response = client_ecs.describe_services(cluster=cluster, services=service_list)
+    services = response['services']
+    for service in services:
+        name    = service['serviceName']
+        desired = service['desiredCount']
+        running = service['runningCount']
+        print(f"services_ready : INFO : Service {name}: Desired = {desired}, Running = {running}")
+		if desired != running:
+			return False
+	return True
