@@ -10,12 +10,15 @@ def update_flask_service_instances(service, num_instances):
 	num_instances = min(num_instances, 10)
 	num_instances = max(num_instances, 0)
 	print(f"update_flask_service_instances : INFO : Requesting {num_instances} for service {service}...")
-	response = client_ecs.update_service(
-		cluster='flask-cluster',
-		service=service,
-		desiredCount=int(num_instances)
-	)
-	return response
+	try:
+		response = client_ecs.update_service(
+			cluster='flask-cluster',
+			service=service,
+			desiredCount=int(num_instances)
+		)
+	except Exception:
+		return False
+	return True
 
 def services_ready(cluster, service_list):
 	response = client_ecs.describe_services(cluster=cluster, services=service_list)
