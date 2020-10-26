@@ -83,7 +83,6 @@ def configure_instance(instance_type, environment):
     }
 	return containerOverrides
 
-
 def submit_train_job(params):
 	print(f'submit_train_job : INFO : received params = {params}')
 	environment = []
@@ -187,7 +186,7 @@ def launch_pretrain_job(params):
 		parameters={},
 		containerOverrides={'environment': environment},
 		timeout={
-        	'attemptDurationSeconds': 3600 * 3
+        	'attemptDurationSeconds': 3600 * (1 + int(params['NPAGES'] / 1000))
     	}
 	)
 	print(f"launch_pretrain_job : INFO : submitted!")
