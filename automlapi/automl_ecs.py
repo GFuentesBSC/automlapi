@@ -7,15 +7,15 @@ client_ecs = boto3.client('ecs',
 						region_name='us-west-2')
 
 def update_flask_service_instances(service, num_instances):
-    num_instances = min(num_instances, 10)
-    num_instances = max(num_instances, 0)
+	num_instances = min(num_instances, 10)
+	num_instances = max(num_instances, 0)
 	print(f"update_flask_service_instances : INFO : Requesting {num_instances} for service {service}...")
-    response = client_ecs.update_service(
-        cluster='flask-cluster',
-        service=service,
-        desiredCount=int(num_instances)
-    )
-    return response
+	response = client_ecs.update_service(
+		cluster='flask-cluster',
+		service=service,
+		desiredCount=int(num_instances)
+	)
+	return response
 
 def services_ready(cluster, service_list):
 	response = client_ecs.describe_services(cluster=cluster, services=service_list)
