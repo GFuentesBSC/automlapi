@@ -80,7 +80,7 @@ def create_service(cluster, serviceName, taskDefinition, targetGroupArn):
 	    loadBalancers=[
 	        {
 	            'targetGroupArn': targetGroupArn,
-	            'containerName': 'ALL_CONTAINER',
+	            'containerName': 'CONTAINER',
 	            'containerPort': 5000
 	        },
 	    ],
