@@ -14,7 +14,8 @@ def update_flask_service_instances(service, num_instances):
 		response = client_ecs.update_service(
 			cluster='flask-cluster',
 			service=service,
-			desiredCount=int(num_instances)
+			desiredCount=int(num_instances),
+			forceNewDeployment=True
 		)
 	except Exception:
 		return False
@@ -31,3 +32,73 @@ def services_ready(cluster, service_list):
 		if desired != running:
 			return False
 	return True
+
+def create_cluster(cluster_name):
+	response = client_ecs.create_cluster(clusterName=cluster_name)
+
+def create_task_definition(task_definition_name, ecr_image):
+	response = client_ecs.register_task_definition(
+	    family=task_definition_name,
+	    taskRoleArn='arn:aws:iam::749868801319:role/ecsTaskExecutionRole',
+	    executionRoleArn='arn:aws:iam::749868801319:role/ecsTaskExecutionRole',
+	    networkMode='bridge',
+	    containerDefinitions=[
+	        {
+	            'name': 'CONTAINER',
+	            'image': ecr_image,
+	            'cpu': 0,
+	            'memory': 6144,
+	            'portMappings': [
+	                {
+	                    'containerPort': 5000,
+	                    'hostPort': 5000,
+	                    'protocol': 'tcp'
+	                },
+	            ],
+	            'essential': True,
+	            'workingDirectory': '/'
+	        },
+	    ],
+	    requiresCompatibilities=[
+	        'EC2',
+	    ],
+	    cpu='2000',
+	    memory='6144'
+	)
+	if int(response['ResponseMetadata']['HTTPStatusCode']) == 200:
+		print(f'create_task_definition : INFO : Created TaskDefinition {task_definition_name}!')
+		return str(response['taskDefinition']['taskDefinitionArn'])
+	else:
+		print(f'create_task_definition : ERROR : Could not create TaskDefinition {task_definition_name}!')
+		return False
+
+def create_service(cluster, serviceName, taskDefinition, targetGroupArn):
+	response = client_ecs.create_service(
+	    cluster=cluster,
+	    serviceName=serviceName,
+	    taskDefinition=taskDefinition,
+	    loadBalancers=[
+	        {
+	            'targetGroupArn': targetGroupArn,
+	            'containerName': 'ALL_CONTAINER',
+	            'containerPort': 5000
+	        },
+	    ],
+	    desiredCount=0,
+	    launchType='EC2',
+	    role='arn:aws:iam::749868801319:role/ecsServiceRole',
+	    deploymentConfiguration={
+	        'maximumPercent': 200,
+	        'minimumHealthyPercent': 100
+	    },
+	    placementStrategy=[
+	        {
+	            'type': 'binpack',
+	            'field': 'memory'
+	        },
+	    ],
+	    healthCheckGracePeriodSeconds=2147483646,
+	    schedulingStrategy='REPLICA',
+	    enableECSManagedTags=True
+	)
+	return int(response['ResponseMetadata']['HTTPStatusCode']) == 200

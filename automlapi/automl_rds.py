@@ -634,3 +634,22 @@ def tag_file(file_id, label):
 		print("tag_file : ERROR : " + str(e))
 	finally:
 		db.close()
+
+def get_last_used_port():
+	last_used_port = 79
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f"SELECT MAX(lb_port) FROM automlapp_project;"
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		if response:
+			last_used_port = int(response[0])
+	except Exception as e:
+		print("get_last_used_port : ERROR : " + str(e))
+	finally:
+		db.close()
+	return last_used_port

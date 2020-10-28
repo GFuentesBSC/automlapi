@@ -6,20 +6,28 @@ client_ec2 = boto3.client('ec2',
 						aws_secret_access_key=AWS_SEC_ACC_KEY,
 						region_name='us-west-2')
 
-def launch_instances_for_flask(num_instances, predict=False):
+def launch_instances_for_flask(num_instances, cluster_name):
 	num_instances = min(num_instances, 10)
 	num_instances = max(num_instances, 0)
-	if predict:
-		template = 'lt-056f7ab54b4e19392'
-	else:
-		template = 'lt-0c52b57123d230c97'
+	# if predict:
+	# 	template = 'lt-056f7ab54b4e19392'
+	# else:
+	# 	template = 'lt-0c52b57123d230c97'
+
+	# indicate cluster
+	userData = f'#!/bin/bash\necho ECS_CLUSTER={cluster_name} >> /etc/ecs/ecs.config'
+
+	# Always launch t2.large instances:
+	template = 'lt-056f7ab54b4e19392'
+
 	response = client_ec2.run_instances(
 		LaunchTemplate={
 			'LaunchTemplateId': template,
 			'Version': '1'
 		},
 		MaxCount=num_instances,
-		MinCount=num_instances
+		MinCount=num_instances,
+		UserData=userData,
 	)
 	launched_instances_ids = []
 	launched_instances = response['Instances']
