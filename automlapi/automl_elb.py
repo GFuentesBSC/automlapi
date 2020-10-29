@@ -67,7 +67,7 @@ def add_rules(listener_arn, mappings):
 		        {
 		            'Field': 'path-pattern',
 		            'PathPatternConfig': {
-		                'Values': [path]
+		                'Values': [f'/{path}']
 		            }
 		        }
 		    ],
