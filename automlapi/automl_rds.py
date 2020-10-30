@@ -691,3 +691,22 @@ def get_project_port(project_pk):
 	finally:
 		db.close()
 	return port
+
+def get_cluster_name_of_project(project_pk):
+	cluster_name = ""
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f"SELECT cluster_name FROM automlapp_project WHERE id = {project_pk};"
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		if response:
+			cluster_name = str(response[0])
+	except Exception as e:
+		print("v : ERROR : " + str(e))
+	finally:
+		db.close()
+	return cluster_name
