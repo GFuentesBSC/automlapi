@@ -6,13 +6,13 @@ client_ecs = boto3.client('ecs',
 						aws_secret_access_key=AWS_SEC_ACC_KEY,
 						region_name='us-west-2')
 
-def update_flask_service_instances(service, num_instances):
+def update_flask_service_instances(service, num_instances, cluster_name):
 	num_instances = min(num_instances, 10)
 	num_instances = max(num_instances, 0)
 	print(f"update_flask_service_instances : INFO : Requesting {num_instances} for service {service}...")
 	try:
 		response = client_ecs.update_service(
-			cluster='flask-cluster',
+			cluster=cluster_name,
 			service=service,
 			desiredCount=int(num_instances),
 			forceNewDeployment=True
