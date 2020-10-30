@@ -26,6 +26,25 @@ def get_projects_of_user(user_pk):
 		db.close()
 	return project_names
 
+def get_user_pk_by_username(username):
+	pk = -1
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f"SELECT id FROM automlapp_user WHERE username = {username};"
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		if response:
+			pk = int(response[0])
+	except:
+		print("get_user_pk_by_username - ERROR")
+	finally:
+		db.close()
+	return pk
+
 def get_user_pk_by_username_password(username, password):
 	pk = -1
 	try:
@@ -51,7 +70,7 @@ def get_project_pk_by_user_pk_project_name(user_pk, project_name):
 							database='ebdb',
 							user='admin',
 							password=BD_PASS)
-		query = "SELECT id FROM automlapp_project WHERE user_id = " + str(user_pk) + " AND proj_name = \"" + project_name + "\""
+		query = "SELECT id FROM automlapp_project WHERE user_id = " + str(user_pk) + " AND proj_name = \"" + project_name + "\";"
 		cursor = db.cursor()
 		cursor.execute(query)
 		response = cursor.fetchone()
@@ -653,3 +672,22 @@ def get_last_used_port():
 	finally:
 		db.close()
 	return last_used_port
+
+def get_project_port(project_pk):
+	port = 80
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f"SELECT lb_port FROM automlapp_project WHERE id = {project_pk};"
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		if response:
+			port = int(response[0])
+	except Exception as e:
+		print("get_project_port : ERROR : " + str(e))
+	finally:
+		db.close()
+	return port
