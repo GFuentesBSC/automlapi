@@ -33,7 +33,7 @@ def get_user_pk_by_username(username):
 							database='ebdb',
 							user='admin',
 							password=BD_PASS)
-		query = f"SELECT id FROM automlapp_user WHERE username = {username};"
+		query = f"SELECT id FROM automlapp_user WHERE username = '{username}';"
 		cursor = db.cursor()
 		cursor.execute(query)
 		response = cursor.fetchone()
@@ -70,7 +70,8 @@ def get_project_pk_by_user_pk_project_name(user_pk, project_name):
 							database='ebdb',
 							user='admin',
 							password=BD_PASS)
-		query = "SELECT id FROM automlapp_project WHERE user_id = " + str(user_pk) + " AND proj_name = \"" + project_name + "\";"
+		query = f'SELECT id FROM automlapp_project WHERE user_id = {user_pk} AND proj_name = "{project_name}";'
+		# query = "SELECT id FROM automlapp_project WHERE user_id = " + str(user_pk) + " AND proj_name = \"" + project_name + "\";"
 		cursor = db.cursor()
 		cursor.execute(query)
 		response = cursor.fetchone()
