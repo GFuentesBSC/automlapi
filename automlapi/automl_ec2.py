@@ -7,7 +7,7 @@ client_ec2 = boto3.client('ec2',
 						region_name='us-west-2')
 
 def launch_instances_for_flask(num_instances, cluster_name):
-	num_instances = min(num_instances, 10)
+	num_instances = min(num_instances, 20)
 	num_instances = max(num_instances, 0)
 	# if predict:
 	# 	template = 'lt-056f7ab54b4e19392'
