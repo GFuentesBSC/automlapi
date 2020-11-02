@@ -378,6 +378,26 @@ def get_file_ids_to_preprocess_for_project(project_id):
 		db.close()
 	return ids
 
+def get_file_ids_completely_processed_for_project(project_id):
+	ids = []
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f'SELECT DISTINCT file_id FROM automlapp_page WHERE ocr_uri IS NOT NULL AND file_id IN (SELECT id FROM automlapp_file WHERE project_id = {project_id});'
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchall()
+		for row in response:
+			ids.append(row[0])
+	except Exception as e:
+		print("get_file_ids_completely_processed_for_project : ERROR : " + str(e))
+	finally:
+		db.close()
+	return ids
+
+
 def get_pages_of_files(file_ids):
 	ids = []
 	png_uris = []
