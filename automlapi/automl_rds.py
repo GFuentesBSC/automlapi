@@ -385,7 +385,7 @@ def get_file_ids_completely_processed_for_project(project_id):
 							database='ebdb',
 							user='admin',
 							password=BD_PASS)
-		query = f'SELECT DISTINCT file_id FROM automlapp_page WHERE ocr_uri IS NOT NULL AND file_id IN (SELECT id FROM automlapp_file WHERE project_id = {project_id});'
+		query = f'SELECT DISTINCT file_id FROM automlapp_page pg WHERE file_id IN (SELECT id FROM automlapp_file WHERE project_id = {project_id}) AND NOT EXISTS (SELECT * FROM automlapp_page pg2 WHERE pg.file_id = pg2.file_id AND ocr_uri IS null);'
 		cursor = db.cursor()
 		cursor.execute(query)
 		response = cursor.fetchall()
