@@ -703,7 +703,7 @@ def get_project_files(project_pk):
 							database='ebdb',
 							user='admin',
 							password=BD_PASS)
-		query = f'SELECT uri, label, npages FROM automlapp_file WHERE project_id = {project_id};'
+		query = f'SELECT uri, label, npages FROM automlapp_file WHERE project_id = {project_pk};'
 		cursor = db.cursor()
 		cursor.execute(query)
 		response = cursor.fetchall()
