@@ -694,6 +694,29 @@ def get_last_used_port():
 		db.close()
 	return last_used_port
 
+def get_project_files(project_pk):
+	uris = []
+	labels = []
+	npages = []
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f'SELECT uri, label, npages FROM automlapp_file WHERE project_id = {project_id};'
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchall()
+		for row in response:
+			uris.append(row[0])
+			labels.append(row[1])
+			npages.append(row[2])
+	except Exception as e:
+		print("get_project_files : ERROR : " + str(e))
+	finally:
+		db.close()
+	return uris, labels, npages
+
 def get_project_port(project_pk):
 	port = 80
 	try:
