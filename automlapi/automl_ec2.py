@@ -15,7 +15,7 @@ def launch_instances_for_flask(num_instances, cluster_name):
 	# 	template = 'lt-0c52b57123d230c97'
 
 	# indicate cluster
-	userData = f'#!/bin/bash\necho ECS_CLUSTER={cluster_name} >> /etc/ecs/ecs.config'
+	userData = f'#!/bin/bash\necho ECS_CLUSTER={cluster_name} >> /etc/ecs/ecs.config\nyum update -y ecs-init\nsystemctl restart docker'
 
 	# Always launch t2.large instances:
 	template = 'lt-056f7ab54b4e19392'
