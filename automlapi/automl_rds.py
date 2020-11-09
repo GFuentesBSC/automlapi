@@ -717,6 +717,25 @@ def get_project_files(project_pk):
 		db.close()
 	return uris, labels, npages
 
+def get_project_confianza(project_pk):
+	confianza = 0
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database='ebdb',
+							user='admin',
+							password=BD_PASS)
+		query = f"SELECT confianza FROM automlapp_project WHERE id = {project_pk};"
+		cursor = db.cursor()
+		cursor.execute(query)
+		response = cursor.fetchone()
+		if response:
+			confianza = int(response[0])
+	except Exception as e:
+		print("get_project_confianza : ERROR : " + str(e))
+	finally:
+		db.close()
+	return confianza
+
 def get_project_port(project_pk):
 	port = 80
 	try:
