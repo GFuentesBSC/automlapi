@@ -710,7 +710,7 @@ def get_project_files(project_pk):
 		for row in response:
 			uris.append(row[0])
 			labels.append(row[1])
-			npages.append(row[2])
+			npages.append(int(row[2]))
 	except Exception as e:
 		print("get_project_files : ERROR : " + str(e))
 	finally:

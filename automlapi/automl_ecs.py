@@ -21,6 +21,17 @@ def update_flask_service_instances(service, num_instances, cluster_name):
 		return False
 	return True
 
+def get_service_instaces_status(cluster, service_name):
+	print(f"get_service_instaces_status : INFO : Getting info of service {service_name} (cluster {cluster})...")
+	response = client_ecs.describe_services(cluster=cluster, services=[service_name])
+	try:
+		service = response['services'][0]
+		desired = service['desiredCount']
+		running = service['runningCount']
+		return desired, running
+	else:
+		return 0, 0
+
 def services_ready(cluster, service_list):
 	response = client_ecs.describe_services(cluster=cluster, services=service_list)
 	services = response['services']
