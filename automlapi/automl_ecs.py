@@ -29,7 +29,7 @@ def get_service_instaces_status(cluster, service_name):
 		desired = service['desiredCount']
 		running = service['runningCount']
 		return desired, running
-	else:
+	except:
 		return 0, 0
 
 def services_ready(cluster, service_list):
