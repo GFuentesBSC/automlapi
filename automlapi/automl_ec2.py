@@ -9,10 +9,6 @@ client_ec2 = boto3.client('ec2',
 def launch_instances_for_flask(num_instances, cluster_name):
 	num_instances = min(num_instances, 20)
 	num_instances = max(num_instances, 0)
-	# if predict:
-	# 	template = 'lt-056f7ab54b4e19392'
-	# else:
-	# 	template = 'lt-0c52b57123d230c97'
 
 	# indicate cluster
 	userData = f'#!/bin/bash\necho ECS_CLUSTER={cluster_name} >> /etc/ecs/ecs.config\nyum update -y ecs-init\nsystemctl restart docker'

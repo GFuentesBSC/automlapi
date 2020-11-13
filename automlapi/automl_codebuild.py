@@ -8,11 +8,11 @@ client_cb = boto3.client('codebuild',
 
 FLASK_PROJECT 	= 'ALL_FLASK_Image_Builder'
 
-def build_image(username, project_id):
+def build_image(codebuildProjectName, username, project_id):
 	print(f"build_image : INFO : Building image for user: {username} and project: {project_id}...")
 	image_tag = f'project_{project_id}'
 	response = client_cb.start_build(
-	    projectName=FLASK_PROJECT,
+	    projectName=codebuildProjectName,
 	    environmentVariablesOverride=[
 	        {
 	            'name': 'IMAGE_TAG',

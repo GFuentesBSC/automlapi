@@ -100,7 +100,7 @@ def create_service(cluster, serviceName, taskDefinition, targetGroupArn):
 	    role='arn:aws:iam::749868801319:role/ecsServiceRole',
 	    deploymentConfiguration={
 	        'maximumPercent': 200,
-	        'minimumHealthyPercent': 100
+	        'minimumHealthyPercent': 0
 	    },
 	    placementStrategy=[
 	        {
