@@ -65,6 +65,11 @@ def create_task_definition(task_definition_name, ecr_image):
 	                    'hostPort': 5000,
 	                    'protocol': 'tcp'
 	                },
+					{
+	                    'containerPort': 5555,
+	                    'hostPort': 5555,
+	                    'protocol': 'tcp'
+	                }
 	            ],
 	            'essential': True,
 	            'workingDirectory': '/'
