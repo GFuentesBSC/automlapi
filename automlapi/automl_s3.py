@@ -37,6 +37,9 @@ def delete_file_from_s3(username, file_uri):
 	except Exception as e:
 		print(f"delete_file_from_s3 : ERROR : {e}")
 
+def upload_fileobj(file, bucket, key):
+	client_s3.upload_fileobj(file, bucket, key)
+
 def upload_document_to_s3(file, username, project_name):
 	# TODO: Count npages of each document!!!
 	s3_data_folder = f'user_data/{username}/{project_name}/data/raw_files/'
