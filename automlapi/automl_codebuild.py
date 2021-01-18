@@ -8,9 +8,17 @@ client_cb = boto3.client('codebuild',
 
 FLASK_PROJECT 	= 'ALL_FLASK_Image_Builder'
 
+def ecr_repository_from_codebuildProjectName(codebuildProjectName):
+	project_name = codebuildProjectName.lower()
+	for repo_name in ['ocr', 'predict', 'preprocess']:
+		if repo_name in project_name:
+			return f'flask_images_{repo_name}'
+	return 'flask_images'
+
 def build_image(codebuildProjectName, username, project_id):
 	print(f"build_image : INFO : Building image for user: {username} and project: {project_id}...")
 	image_tag = f'project_{project_id}'
+	ecr_repository = ecr_repository_from_codebuildProjectName(codebuildProjectName)
 	response = client_cb.start_build(
 	    projectName=codebuildProjectName,
 	    environmentVariablesOverride=[
@@ -33,6 +41,6 @@ def build_image(codebuildProjectName, username, project_id):
 	)
 	print(f'build_image : INFO : Done!')
 	if int(response['ResponseMetadata']['HTTPStatusCode']) == 200:
-		return f'749868801319.dkr.ecr.us-west-2.amazonaws.com/flask_images:{image_tag}'
+		return f'749868801319.dkr.ecr.us-west-2.amazonaws.com/{ecr_repository}:{image_tag}'
 	else:
 		return False
