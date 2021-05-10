@@ -2,12 +2,12 @@ import boto3
 import base64
 import hmac
 import hashlib
-from .automl import AWS_ACC_KEY_ID, AWS_SEC_ACC_KEY, USER_POOL_ID, CLIENT_ID, CLIENT_SECRET
+from .automl import AWS_ACC_KEY_ID, AWS_SEC_ACC_KEY, USER_POOL_ID, CLIENT_ID, CLIENT_SECRET, AWS_REGION_NAME
 
 client_cognito = boto3.client('cognito-idp',
 						aws_access_key_id=AWS_ACC_KEY_ID,
 						aws_secret_access_key=AWS_SEC_ACC_KEY,
-						region_name='us-west-2')
+						region_name=AWS_REGION_NAME)
 
 
 def get_secret_hash(username):

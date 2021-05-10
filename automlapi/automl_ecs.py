@@ -1,10 +1,10 @@
 import boto3
-from .automl import AWS_ACC_KEY_ID, AWS_SEC_ACC_KEY
+from .automl import AWS_ACC_KEY_ID, AWS_SEC_ACC_KEY, AWS_REGION_NAME
 
 client_ecs = boto3.client('ecs',
 						aws_access_key_id=AWS_ACC_KEY_ID,
 						aws_secret_access_key=AWS_SEC_ACC_KEY,
-						region_name='us-west-2')
+						region_name=AWS_REGION_NAME)
 
 def update_flask_service_instances(service, num_instances, cluster_name):
 	num_instances = min(num_instances, 20)

@@ -1,56 +1,78 @@
 import MySQLdb as mysql
 import os
 import json
-from .automl import BD_HOST, BD_PASS
+from .automl import BD_HOST, BD_PASS, BD_DATABASE, BD_USER
 
-##################### RDS #############################
-def get_projects_of_user(user_pk):
-
-	project_names = []
+def run_select(query):
+	result = []
 
 	try:
 		db = mysql.connect(host=BD_HOST,
-							 database='ebdb',
-							 user='admin',
+							 database=BD_DATABASE,
+							 user=BD_USER,
 							 password=BD_PASS)
-		query = "SELECT proj_name FROM automlapp_project WHERE user_id = " + str(user_pk) + ";"
 		cursor = db.cursor()
 		cursor.execute(query)
 		response = cursor.fetchall()
 		for elem in response:
-			project_names.append(elem[0])
-	except:
-		print("get_projects_of_user - ERROR")
+			result.append(elem[0])
+	except Exception as e:
+		print(f"run_select - ERROR - {e}")
 	finally:
 		cursor.close()
 		db.close()
-	return project_names
+	return result
 
-def get_user_pk_by_username(username):
+def run_insert(query):
 	pk = -1
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
-		query = f"SELECT id FROM automlapp_user WHERE username = '{username}';"
 		cursor = db.cursor()
 		cursor.execute(query)
-		response = cursor.fetchone()
-		if response:
-			pk = int(response[0])
-	except:
-		print("get_user_pk_by_username - ERROR")
+		pk = cursor.lastrowid
+		db.commit()
+	except mysql.IntegrityError:
+		pass
+	except Exception as e:
+		print(f"run_insert : ERROR :  {e}")
 	finally:
 		db.close()
+	return pk
+
+def get_projects_of_projectManager(projectManager_id):
+	query = f"SELECT project_id FROM neuralplatform_projectmanagerassignedproject WHERE projectManager_id = {projectManager_id};"
+	project_ids = run_select(query)
+	return project_ids
+
+def validate_user(account_code, username, password):
+	return True
+
+def insert_file(uploadDate, filename, extension, phase, uri, npages, tagged, training, dataset_id, uploadMethod_id):
+	query = f'INSERT INTO neuralplatform_file(uploadDate, name, extension, phase, uri, npages, tagged, training, dataset_id, uploadMethod_id) ' + \
+			f'VALUES ("{uploadDate}", "{filename}", "{extension}", "{phase}", "{uri}", {npages}, {tagged}, {training}, {dataset_id}, {uploadMethod_id});'
+	return run_insert(query)
+
+def insert_request(phase, requestDate, answered, responseTime, response, file_id, project_id):
+	query = f'INSERT INTO neuralplatform_request(phase, requestDate, answered, responseTime, response, file_id, project_id) ' + \
+			f'VALUES ("{phase}", "{requestDate}", {answered}, {responseTime}, "{response}", {file_id}, {project_id});'
+	return run_insert(query)
+
+######## DEPRECATED ########
+
+def get_user_pk_by_username(username):
+	query = f"SELECT id FROM automlapp_user WHERE username = '{username}';"
+	pk = run_select(query)[0]
 	return pk
 
 def get_user_pk_by_username_password(username, password):
 	pk = -1
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = "SELECT id FROM automlapp_user WHERE username = \"" + username + "\" AND password = \"" + password + "\""
 		cursor = db.cursor()
@@ -67,8 +89,8 @@ def get_project_pk_by_user_pk_project_name(user_pk, project_name):
 	pk = -1
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'SELECT id FROM automlapp_project WHERE user_id = {user_pk} AND proj_name = "{project_name}";'
 		# query = "SELECT id FROM automlapp_project WHERE user_id = " + str(user_pk) + " AND proj_name = \"" + project_name + "\";"
@@ -86,8 +108,8 @@ def get_project_id_by_model_id(model_id):
 	project_id = -1
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f"SELECT project_id FROM automlapp_modelversion WHERE id = {model_id};"
 		cursor = db.cursor()
@@ -105,8 +127,8 @@ def get_project_name_by_project_pk(project_pk):
 	name = ""
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f"SELECT proj_name FROM automlapp_project WHERE id = {project_pk};"
 		cursor = db.cursor()
@@ -123,8 +145,8 @@ def get_document_count_by_project_id_and_label(project_id, label):
 	count = 0
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f"SELECT COUNT(*) FROM automlapp_file WHERE project_id = {project_id} AND label = {label};"
 		cursor = db.cursor()
@@ -137,37 +159,12 @@ def get_document_count_by_project_id_and_label(project_id, label):
 		db.close()
 	return count
 
-def insert_file(file_path, project_name, user_pk, npages=1):
-	pk = -1
-	try:
-		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
-							password=BD_PASS)
-
-		file_name, file_ext = os.path.splitext(os.path.basename(file_path))
-		file_ext = file_ext.replace('.','')
-		project_pk = get_project_pk_by_user_pk_project_name(user_pk, project_name)
-		query = '''INSERT INTO automlapp_file(file_type, file_name, uri, project_id, trained, npages)
-							VALUES("{}","{}","{}",{},{},{})'''.format(file_ext, file_name, file_path, project_pk, 0, npages)
-		cursor = db.cursor()
-		cursor.execute(query)
-		pk = cursor.lastrowid
-		db.commit()
-	except mysql.IntegrityError:
-		pass
-	except Exception as e:
-		print("insert_file : ERROR :  " + str(e))
-	finally:
-		db.close()
-	return pk
-
 def insert_files_to_rds(paths, project_name, user_pk):
 	inserted = False
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		project_pk = get_project_pk_by_user_pk_project_name(user_pk, project_name)
 		cursor = db.cursor()
@@ -192,8 +189,8 @@ def update_job_result(job_id, result):
 	result = round(result, 2)
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 
 		query = f'UPDATE automlapp_job SET result = {result} where id = {job_id};'
@@ -209,8 +206,8 @@ def get_png_uri_from_page_id(page_id):
 	uri = None
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f"SELECT png_uri FROM automlapp_page WHERE id = {page_id};"
 		cursor = db.cursor()
@@ -227,8 +224,8 @@ def get_file_uri_and_label_from_id(file_id):
 	uri = label = None
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f"SELECT uri, label FROM automlapp_file WHERE id = {file_id};"
 		cursor = db.cursor()
@@ -246,8 +243,8 @@ def insert_page(image_path_s3, file_id, label):
 	pk = -1
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 
 		query = f'INSERT INTO automlapp_page(png_uri, file_id, label) VALUES ("{image_path_s3}", {file_id}, {label})'
@@ -267,8 +264,8 @@ def get_trained_model_path(project_id):
 	path = None
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f"SELECT trained_model_path FROM automlapp_model WHERE project_id = {project_id};"
 		cursor = db.cursor()
@@ -285,8 +282,8 @@ def get_npages_to_preprocess_for_project(project_id):
 	npages = 0
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'SELECT SUM(npages) FROM automlapp_file WHERE project_id = {project_id} AND trained = 0 AND preprocessed = 0;'
 		cursor = db.cursor()
@@ -304,8 +301,8 @@ def get_npages_of_file(file_id):
 	npages = 0
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'SELECT npages FROM automlapp_file WHERE id = {file_id};'
 		cursor = db.cursor()
@@ -323,8 +320,8 @@ def all_pages_processed_for_file_ids(file_ids):
 	all_processed = False
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query1 = f'SELECT SUM(npages) FROM automlapp_file WHERE id IN ({str(file_ids)[1:-1]});'
 		query2 = f'SELECT COUNT(*) FROM automlapp_page WHERE file_id IN ({str(file_ids)[1:-1]}) AND ocr_uri IS NOT NULL;'
@@ -347,8 +344,8 @@ def all_pages_processed_for_file_ids(file_ids):
 def set_files_preprocessed(file_ids):
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'UPDATE automlapp_file SET preprocessed = 1 WHERE id IN ({str(file_ids)[1:-1]});'
 		cursor = db.cursor()
@@ -363,8 +360,8 @@ def get_file_ids_to_preprocess_for_project(project_id):
 	ids = []
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'SELECT id FROM automlapp_file WHERE project_id = {project_id} AND trained = 0 AND preprocessed = 0;'
 		cursor = db.cursor()
@@ -382,8 +379,8 @@ def get_file_ids_completely_processed_for_project(project_id):
 	ids = []
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'SELECT DISTINCT file_id FROM automlapp_page pg WHERE file_id IN (SELECT id FROM automlapp_file WHERE project_id = {project_id}) AND NOT EXISTS (SELECT * FROM automlapp_page pg2 WHERE pg.file_id = pg2.file_id AND ocr_uri IS null);'
 		cursor = db.cursor()
@@ -397,15 +394,14 @@ def get_file_ids_completely_processed_for_project(project_id):
 		db.close()
 	return ids
 
-
 def get_pages_of_files(file_ids):
 	ids = []
 	png_uris = []
 	ocr_uris = []
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'SELECT label, png_uri, ocr_uri FROM automlapp_page WHERE file_id IN ({str(file_ids)[1:-1]});'
 		cursor = db.cursor()
@@ -425,8 +421,8 @@ def delete_file_from_rds(username, file_uri):
 
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 
 		query = f"DELETE FROM automlapp_file WHERE uri ='{file_uri}';"
@@ -442,8 +438,8 @@ def update_ocr_uri_by_page_id(page_id, ocr_uri):
 	print(f"update_ocr_uri_by_page_id : INFO : page_id = {page_id}, ocr_uri = {ocr_uri}")
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 
 		query = f'UPDATE automlapp_page SET ocr_uri = "{ocr_uri}" where id = {page_id};'
@@ -460,8 +456,8 @@ def create_training_job(model_id: int, output_path: str) -> int:
 	try:
 		project_id = get_project_id_by_model_id(model_id)
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 
 		query = f'INSERT INTO automlapp_job(status, model_id, result, job_type, output_path, project_id) VALUES ("CREATED", {model_id}, 0, "TRAIN", "{output_path}", {project_id});'
@@ -481,8 +477,8 @@ def get_file_ids_preprocessed_untrained(project_id):
 	ids = []
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'SELECT id FROM automlapp_file WHERE project_id = {project_id} AND trained = 0 AND preprocessed = 1;'
 		cursor = db.cursor()
@@ -500,8 +496,8 @@ def get_model_hyperparams(model_id):
 	hyperparams = {}
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'SELECT hyperparams FROM automlapp_modelversion WHERE id = {model_id};'
 		cursor = db.cursor()
@@ -517,13 +513,12 @@ def get_model_hyperparams(model_id):
 		db.close()
 	return hyperparams
 
-
 def get_trained_model_path(model_id):
 	path = ''
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'SELECT trained_model_path FROM automlapp_modelversion WHERE id = {model_id};'
 		cursor = db.cursor()
@@ -541,8 +536,8 @@ def get_trainings_for_project(project_id):
 	trainings = 0
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'SELECT trainings FROM automlapp_project WHERE id = {project_id};'
 		cursor = db.cursor()
@@ -560,8 +555,8 @@ def get_raw_model_name_of_model_version(model_id):
 	raw_model_name = ''
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query1 = f'SELECT raw_model_id FROM automlapp_modelversion WHERE id = {model_id};'
 		cursor = db.cursor()
@@ -582,8 +577,8 @@ def get_model_ids_for_project(project_id):
 	ids = []
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'SELECT id FROM automlapp_modelversion WHERE project_id = {project_id};'
 		cursor = db.cursor()
@@ -602,8 +597,8 @@ def get_best_model_id_and_accuracy_for_project(project_id):
 	ac = 0.0
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'SELECT id, accuracy FROM automlapp_modelversion WHERE project_id = {project_id};'
 		cursor = db.cursor()
@@ -625,8 +620,8 @@ def get_training_image_tag_for_model_version(model_id):
 	training_image = ''
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		cursor = db.cursor()
 		query1 = f'select raw_model_id from automlapp_modelversion WHERE id = {model_id};'
@@ -646,8 +641,8 @@ def get_training_image_tag_for_model_version(model_id):
 def update_trained_model_path(model_id, trained_model_path):
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 
 		query = f'UPDATE automlapp_modelversion SET trained_model_path = "{trained_model_path}" where id = {model_id};'
@@ -662,8 +657,8 @@ def update_trained_model_path(model_id, trained_model_path):
 def tag_file(file_id, label):
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 
 		query = f'UPDATE automlapp_file SET label = {label} where id = {file_id};'
@@ -679,8 +674,8 @@ def get_last_used_port():
 	last_used_port = 79
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f"SELECT MAX(lb_port) FROM automlapp_project;"
 		cursor = db.cursor()
@@ -700,8 +695,8 @@ def get_project_files(project_pk):
 	npages = []
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f'SELECT uri, label, npages FROM automlapp_file WHERE project_id = {project_pk};'
 		cursor = db.cursor()
@@ -721,8 +716,8 @@ def get_project_confianza(project_pk):
 	confianza = 0
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f"SELECT confianza FROM automlapp_project WHERE id = {project_pk};"
 		cursor = db.cursor()
@@ -740,8 +735,8 @@ def get_project_port(project_pk):
 	port = 80
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f"SELECT lb_port FROM automlapp_project WHERE id = {project_pk};"
 		cursor = db.cursor()
@@ -759,8 +754,8 @@ def get_cluster_name_of_project(project_pk):
 	cluster_name = ""
 	try:
 		db = mysql.connect(host=BD_HOST,
-							database='ebdb',
-							user='admin',
+							database=BD_DATABASE,
+							user=BD_USER,
 							password=BD_PASS)
 		query = f"SELECT cluster_name FROM automlapp_project WHERE id = {project_pk};"
 		cursor = db.cursor()

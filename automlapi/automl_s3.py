@@ -8,21 +8,34 @@ import botocore.exceptions
 import io
 from botocore.exceptions import ClientError
 from PyPDF2 import PdfFileReader
-from .automl import AWS_ACC_KEY_ID, AWS_SEC_ACC_KEY
+from .automl import AWS_ACC_KEY_ID, AWS_SEC_ACC_KEY, AWS_REGION_NAME, S3_BUCKET
 
 
 client_s3 = boto3.client('s3',
 						aws_access_key_id=AWS_ACC_KEY_ID,
 						aws_secret_access_key=AWS_SEC_ACC_KEY,
-						region_name='us-west-2')
+						region_name=AWS_REGION_NAME)
 
 resource_s3 = boto3.resource('s3',
 						aws_access_key_id=AWS_ACC_KEY_ID,
 						aws_secret_access_key=AWS_SEC_ACC_KEY,
-						region_name='us-west-2')
+						region_name=AWS_REGION_NAME)
+
+
+def upload_file(file, path):
+	# file must be opened in 'rb'
+	try:
+		bucketname = S3_BUCKET
+		client_s3.upload_fileobj(file, bucketname, path)
+		return True
+	except Exception as e:
+		print(f"upload_file : ERROR : {e}")
+		return False
+
+####### DEPRECATED #######
 
 def write_file(filepath, content):
-	bucketName = "elasticbeanstalk-us-west-2-749868801319"
+	bucketName = S3_BUCKET
 	bucket = resource_s3.Bucket(bucketName)
 	try:
 		object = bucket.Object(filepath)
@@ -139,18 +152,6 @@ def get_bucketname_by_username(username):
 	# TODO: Hacer una query a la tabla user para ver que bucket tiene asociado
 	return 'elasticbeanstalk-us-west-2-749868801319'
 
-def upload_file(file, username, objectname):
-	# file must be opened in 'rb'
-	try:
-		bucketname = get_bucketname_by_username(username)
-		print("Storing in " + bucketname + ": " + objectname)
-		client_s3.upload_fileobj(file, bucketname, objectname)
-		obj_summary = resource_s3.ObjectSummary(bucketname, objectname)
-		print("File size: " + str(obj_summary.size) + " Bytes")
-		return True
-	except Exception as e:
-		print("upload-upload_file : ERROR : " + str(e))
-		return False
 
 def private_upload_file(file, username, s3_path):
 	try:
