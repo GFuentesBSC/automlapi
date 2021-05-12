@@ -12,7 +12,6 @@ BD_HOST = ''
 BD_PASS = ''
 BD_DATABASE = ''
 BD_USER = ''
-S3_BUCKET = ''
 
 def init():
 
@@ -44,5 +43,3 @@ def init():
 		BD_DATABASE = j['BD_DATABASE']
 		global BD_USER
 		BD_USER = j['BD_USER']
-		global S3_BUCKET
-		S3_BUCKET = j['S3_BUCKET']

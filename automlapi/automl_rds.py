@@ -67,7 +67,7 @@ def insert_request(phase, requestDate, answered, responseTime, response, documen
 			f'VALUES ("{phase}", "{requestDate}", {answered}, {responseTime}, "{response}", {document_id}, {project_id});'
 	return run_insert(query)
 
-def insert_page(imgUri, ocrUri, documnt_id):
+def insert_page(imgUri, ocrUri, document_id):
     query = f'INSERT INTO neuralplatform_page(imgUri, ocrUri, document_id) ' + \
             f'VALUES ("{imgUri}", "{ocrUri}", {document_id});'
     return run_insert(query)
