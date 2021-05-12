@@ -4,24 +4,27 @@ import json
 from .automl import BD_HOST, BD_PASS, BD_DATABASE, BD_USER
 
 def run_select(query):
-	result = []
+    result = []
 
-	try:
-		db = mysql.connect(host=BD_HOST,
-							 database=BD_DATABASE,
-							 user=BD_USER,
-							 password=BD_PASS)
-		cursor = db.cursor()
-		cursor.execute(query)
-		response = cursor.fetchall()
-		for elem in response:
-			result.append(elem[0])
-	except Exception as e:
-		print(f"run_select - ERROR - {e}")
-	finally:
-		cursor.close()
-		db.close()
-	return result
+    try:
+        db = mysql.connect(host=BD_HOST,
+            database=BD_DATABASE,
+            user=BD_USER,
+            password=BD_PASS)
+        cursor = db.cursor()
+        cursor.execute(query)
+        response = cursor.fetchall()
+        field_names = [i[0] for i in cursor.description]
+        for elem in response:
+            result.append({})
+            for index, value in enumerate(elem):
+                result[-1][field_names[index]] = value
+    except Exception as e:
+        print(f"run_select - ERROR - {e}")
+    finally:
+        cursor.close()
+        db.close()
+    return result
 
 def run_insert(query):
 	pk = -1
@@ -47,19 +50,27 @@ def get_projects_of_projectManager(projectManager_id):
 	project_ids = run_select(query)
 	return project_ids
 
+def get_object_by_id(objectName, objectId):
+	query = f'SELECT * FROM neuralplatform_{objectName} WHERE id = {objectId};'
+	return run_select(query)[0]
+
 def validate_user(account_code, username, password):
 	return True
 
-def insert_file(uploadDate, filename, extension, phase, uri, npages, tagged, training, dataset_id, uploadMethod_id):
-	query = f'INSERT INTO neuralplatform_file(uploadDate, name, extension, phase, uri, npages, tagged, training, dataset_id, uploadMethod_id) ' + \
+def insert_document(uploadDate, filename, extension, phase, uri, npages, tagged, training, dataset_id, uploadMethod_id):
+	query = f'INSERT INTO neuralplatform_document(uploadDate, name, extension, phase, uri, npages, tagged, training, dataset_id, uploadMethod_id) ' + \
 			f'VALUES ("{uploadDate}", "{filename}", "{extension}", "{phase}", "{uri}", {npages}, {tagged}, {training}, {dataset_id}, {uploadMethod_id});'
 	return run_insert(query)
 
-def insert_request(phase, requestDate, answered, responseTime, response, file_id, project_id):
-	query = f'INSERT INTO neuralplatform_request(phase, requestDate, answered, responseTime, response, file_id, project_id) ' + \
-			f'VALUES ("{phase}", "{requestDate}", {answered}, {responseTime}, "{response}", {file_id}, {project_id});'
+def insert_request(phase, requestDate, answered, responseTime, response, document_id, project_id):
+	query = f'INSERT INTO neuralplatform_request(phase, requestDate, answered, responseTime, response, document_id, project_id) ' + \
+			f'VALUES ("{phase}", "{requestDate}", {answered}, {responseTime}, "{response}", {document_id}, {project_id});'
 	return run_insert(query)
 
+def insert_page(imgUri, ocrUri, documnt_id):
+    query = f'INSERT INTO neuralplatform_page(imgUri, ocrUri, document_id) ' + \
+            f'VALUES ("{imgUri}", "{ocrUri}", {document_id});'
+    return run_insert(query)
 ######## DEPRECATED ########
 
 def get_user_pk_by_username(username):

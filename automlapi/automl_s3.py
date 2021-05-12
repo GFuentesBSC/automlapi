@@ -8,7 +8,7 @@ import botocore.exceptions
 import io
 from botocore.exceptions import ClientError
 from PyPDF2 import PdfFileReader
-from .automl import AWS_ACC_KEY_ID, AWS_SEC_ACC_KEY, AWS_REGION_NAME, S3_BUCKET
+from .automl import AWS_ACC_KEY_ID, AWS_SEC_ACC_KEY, AWS_REGION_NAME
 
 
 client_s3 = boto3.client('s3',
@@ -21,15 +21,24 @@ resource_s3 = boto3.resource('s3',
 						aws_secret_access_key=AWS_SEC_ACC_KEY,
 						region_name=AWS_REGION_NAME)
 
+######## UPDATED ########
 
-def upload_file(file, path):
+def upload_file(bucketName, file, path):
 	# file must be opened in 'rb'
 	try:
-		bucketname = S3_BUCKET
-		client_s3.upload_fileobj(file, bucketname, path)
+		client_s3.upload_fileobj(file, bucketName, path)
 		return True
 	except Exception as e:
 		print(f"upload_file : ERROR : {e}")
+		return False
+
+def download_file(bucketName, s3_path, local_path):
+	try:
+		bucket = resource_s3.Bucket(bucketName)
+		bucket.download_file(s3_path, local_path)
+		return True
+	except Exception as e:
+		print(f"download_file : ERROR : {e}")
 		return False
 
 ####### DEPRECATED #######
