@@ -57,9 +57,9 @@ def get_object_by_id(objectName, objectId):
 def validate_user(account_code, username, password):
 	return True
 
-def insert_document(uploadDate, filename, extension, phase, uri, npages, tagged, training, dataset_id, uploadMethod_id):
-	query = f'INSERT INTO neuralplatform_document(uploadDate, name, extension, phase, uri, npages, tagged, training, dataset_id, uploadMethod_id) ' + \
-			f'VALUES ("{uploadDate}", "{filename}", "{extension}", "{phase}", "{uri}", {npages}, {tagged}, {training}, {dataset_id}, {uploadMethod_id});'
+def insert_document(uploadDate, filename, extension, phase, uri, nPages, tagged, training, dataset_id, uploadMethod_id):
+	query = f'INSERT INTO neuralplatform_document(uploadDate, name, extension, phase, uri, nPages, tagged, training, dataset_id, uploadMethod_id) ' + \
+			f'VALUES ("{uploadDate}", "{filename}", "{extension}", "{phase}", "{uri}", {nPages}, {tagged}, {training}, {dataset_id}, {uploadMethod_id});'
 	return run_insert(query)
 
 def insert_request(phase, requestDate, answered, responseTime, response, document_id, project_id):
