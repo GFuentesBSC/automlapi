@@ -250,27 +250,6 @@ def get_file_uri_and_label_from_id(file_id):
 		db.close()
 	return uri, label
 
-def insert_page(image_path_s3, file_id, label):
-	pk = -1
-	try:
-		db = mysql.connect(host=BD_HOST,
-							database=BD_DATABASE,
-							user=BD_USER,
-							password=BD_PASS)
-
-		query = f'INSERT INTO automlapp_page(png_uri, file_id, label) VALUES ("{image_path_s3}", {file_id}, {label})'
-		cursor = db.cursor()
-		cursor.execute(query)
-		pk = cursor.lastrowid
-		db.commit()
-	except mysql.IntegrityError:
-		pass
-	except Exception as e:
-		print("insert_page : ERROR : " + str(e))
-	finally:
-		db.close()
-	return pk
-
 def get_trained_model_path(project_id):
 	path = None
 	try:
