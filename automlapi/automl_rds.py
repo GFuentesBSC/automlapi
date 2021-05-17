@@ -56,15 +56,17 @@ def get_projects_of_projectManager(projectManager_id):
 	project_ids = run_select(query)
 	return project_ids
 
-def get_n_objects_by_key(objectName, n=1, key='id', keyValue):
+def get_n_objects_by_key(objectName, n=1, key='id', keyValue=1):
+
     if isinstance(keyValue, str):
         keyValue = '"' + keyValue + '"'
-	query = f'SELECT * FROM neuralplatform_{objectName.lower()} WHERE {key} = {keyValue};'
+
+    query = f'SELECT * FROM neuralplatform_{objectName.lower()} WHERE {key} = {keyValue};'
     elements = run_select(query)
     if len(elements) > 0:
         return elements[:n]
-    else:
-        return None
+
+    return None
 
 def validate_projectManager(account_code, username, hashed_password):
     accounts = get_n_objects_by_key('account', 1, 'code', account_code)
@@ -86,8 +88,7 @@ def validate_admin(account_code, username, hashed_password):
 
 def validate_user(account_code, username, password):
     hashed_password = hash_password(password)
-	return validate_admin(account_code, username, hashed_password) or validate_projectManager(account_code, username,
-                                                                                              hashed_password)
+    return validate_admin(account_code, username, hashed_password) or validate_projectManager(account_code, username, hashed_password)
 
 def insert_document(uploadDate, filename, extension, phase, uri, nPages, tagged, training, dataset_id, uploadMethod_id):
 	query = f'INSERT INTO neuralplatform_document(uploadDate, name, extension, phase, uri, nPages, tagged, training, dataset_id, uploadMethod_id) ' + \
