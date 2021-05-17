@@ -1,7 +1,13 @@
 import MySQLdb as mysql
 import os
+import hashlib
 import json
 from .automl import BD_HOST, BD_PASS, BD_DATABASE, BD_USER
+
+def hash_password(password):
+    n = 100000
+    hashed_password = hashlib.pbkdf2_hmac('sha256', password.encode(), b'salt', n).hex()
+    return hashed_password
 
 def run_select(query):
     result = []
@@ -50,12 +56,38 @@ def get_projects_of_projectManager(projectManager_id):
 	project_ids = run_select(query)
 	return project_ids
 
-def get_object_by_id(objectName, objectId):
-	query = f'SELECT * FROM neuralplatform_{objectName} WHERE id = {objectId};'
-	return run_select(query)[0]
+def get_n_objects_by_key(objectName, n=1, key='id', keyValue):
+    if isinstance(keyValue, str):
+        keyValue = '"' + keyValue + '"'
+	query = f'SELECT * FROM neuralplatform_{objectName.lower()} WHERE {key} = {keyValue};'
+    elements = run_select(query)
+    if len(elements) > 0:
+        return elements[:n]
+    else:
+        return None
+
+def validate_projectManager(account_code, username, hashed_password):
+    accounts = get_n_objects_by_key('account', 1, 'code', account_code)
+    if accounts:
+        account_id = int(accounts[0]['id'])
+        projectManagers = get_n_objects_by_key('projectmanager', None, 'account_id', account_id)
+        if projectManagers:
+            for pm in projectManagers:
+                if pm['username'] == username and pm['password'] == hashed_password:
+                    return True
+    return False
+
+def validate_admin(account_code, username, hashed_password):
+    accounts = get_n_objects_by_key('account', 1, 'code', account_code)
+    if accounts:
+        account = accounts[0]
+        return account['username'] == username and account['password'] == hashed_password
+    return False
 
 def validate_user(account_code, username, password):
-	return True
+    hashed_password = hash_password(password)
+	return validate_admin(account_code, username, hashed_password) or validate_projectManager(account_code, username,
+                                                                                              hashed_password)
 
 def insert_document(uploadDate, filename, extension, phase, uri, nPages, tagged, training, dataset_id, uploadMethod_id):
 	query = f'INSERT INTO neuralplatform_document(uploadDate, name, extension, phase, uri, nPages, tagged, training, dataset_id, uploadMethod_id) ' + \
