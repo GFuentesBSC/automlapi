@@ -95,9 +95,9 @@ def insert_document(uploadDate, filename, extension, phase, uri, nPages, tagged,
 			f'VALUES ("{uploadDate}", "{filename}", "{extension}", "{phase}", "{uri}", {nPages}, {tagged}, {training}, {dataset_id}, {uploadMethod_id});'
 	return run_insert(query)
 
-def insert_request(phase, requestDate, answered, responseTime, response, document_id, project_id):
-	query = f'INSERT INTO neuralplatform_request(phase, requestDate, answered, responseTime, response, document_id, project_id) ' + \
-			f'VALUES ("{phase}", "{requestDate}", {answered}, {responseTime}, "{response}", {document_id}, {project_id});'
+def insert_request(phase, requestDate, document_id, project_id):
+	query = f'INSERT INTO neuralplatform_request(phase, requestDate, document_id, project_id) ' + \
+			f'VALUES ("{phase}", "{requestDate}", {document_id}, {project_id});'
 	return run_insert(query)
 
 def insert_page(imgUri, ocrUri, document_id):
