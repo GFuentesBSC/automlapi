@@ -63,7 +63,7 @@ def run_multiple_insert(queries):
             cursor.execute(query)
             pks.append(cursor.lastrowid)
         db.commit()
-    except:
+    except Exception as e:
         print(f"run_multiple_insert : ERROR :  {e}")
     finally:
         db.close()
