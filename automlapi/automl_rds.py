@@ -51,10 +51,43 @@ def run_insert(query):
 		db.close()
 	return pk
 
-def get_projects_of_projectManager(projectManager_id):
-	query = f"SELECT project_id FROM neuralplatform_projectmanagerassignedproject WHERE projectManager_id = {projectManager_id};"
-	project_ids = run_select(query)
-	return project_ids
+def run_multiple_insert(queries):
+    pks = []
+    try:
+        db = mysql.connect(host=BD_HOST,
+                            database=BD_DATABASE,
+                            user=BD_USER,
+                            password=BD_PASS)
+        cursor = db.cursor()
+        for query in queries:
+            cursor.execute(query)
+            pks.append(cursor.lastrowid)
+        db.commit()
+    except:
+        print(f"run_multiple_insert : ERROR :  {e}")
+    finally:
+        db.close()
+    return pks
+
+def insert_n_objects(objectName, objects):
+
+    table_name = f'neuralplatform_{objectName.lower()}'
+    queries = []
+    for object in objects:
+        fields = ""
+        values = ""
+        for key in object:
+            fields += key + ', '
+            value = object[key]
+            if isinstance(value, str):
+                value = '"' + value + '"'
+            values += str(value) + ', '
+        else:
+            fields = fields[:-2]
+            values = values[:-2]
+        queries.append(f'INSERT INTO {table_name}({fields}) VALUES({values});')
+
+    return run_multiple_insert(queries)
 
 def get_n_objects_by_key(objectName, n=1, key='id', keyValue=1):
 
@@ -67,6 +100,11 @@ def get_n_objects_by_key(objectName, n=1, key='id', keyValue=1):
         return elements[:n]
 
     return None
+
+def get_projects_of_projectManager(projectManager_id):
+	query = f"SELECT project_id FROM neuralplatform_projectmanagerassignedproject WHERE projectManager_id = {projectManager_id};"
+	project_ids = run_select(query)
+	return project_ids
 
 def validate_projectManager(account_code, username, hashed_password):
     accounts = get_n_objects_by_key('account', 1, 'code', account_code)
