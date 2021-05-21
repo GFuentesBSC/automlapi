@@ -51,6 +51,21 @@ def run_insert(query):
 		db.close()
 	return pk
 
+def run_update(query):
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database=BD_DATABASE,
+							user=BD_USER,
+							password=BD_PASS)
+
+		cursor = db.cursor()
+		cursor.execute(query)
+		db.commit()
+	except Exception as e:
+		print("run_update - ERROR " + str(e))
+	finally:
+		db.close()
+
 def run_multiple_insert(queries):
     pks = []
     try:
@@ -100,6 +115,18 @@ def get_n_objects_by_key(objectName, n=1, key='id', keyValue=1):
         return elements[:n]
 
     return None
+
+def update_object_by_id(objectName, id, fields):
+    changes = ""
+    for field in fields:
+        value = fields[field]
+        if isinstance(value, str):
+            value = '"' + value + '"'
+        changes += field + ' = ' + value + ', '
+    else:
+        changes = changes[:-2]
+    query = f'UPDATE neuralplatform_{objectName.lower()} SET {changes} WHERE id = {id};'
+    run_update(query)
 
 def get_projects_of_projectManager(projectManager_id):
 	query = f"SELECT project_id FROM neuralplatform_projectmanagerassignedproject WHERE projectManager_id = {projectManager_id};"
