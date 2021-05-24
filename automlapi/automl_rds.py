@@ -10,14 +10,34 @@ def hash_password(password):
     hashed_password = hashlib.pbkdf2_hmac('sha256', password.encode(), b'salt', n).hex()
     return hashed_password
 
+def run_exists(query):
+
+    exists = False
+
+    try:
+        db = mysql.connect(host=BD_HOST,
+                database=BD_DATABASE,
+                user=BD_USER,
+                password=BD_PASS)
+        cursor = db.cursor()
+        cursor.execute(query)
+        response = cursor.fetchall()
+        exists = len(response) > 0
+    except Exception as e:
+        print(f"run_exists - ERROR - {e}")
+    finally:
+        db.close()
+
+    return exists
+
 def run_select(query):
     result = []
 
     try:
         db = mysql.connect(host=BD_HOST,
-            database=BD_DATABASE,
-            user=BD_USER,
-            password=BD_PASS)
+                database=BD_DATABASE,
+                user=BD_USER,
+                password=BD_PASS)
         cursor = db.cursor()
         cursor.execute(query)
         response = cursor.fetchall()
@@ -29,7 +49,6 @@ def run_select(query):
     except Exception as e:
         print(f"run_select - ERROR - {e}")
     finally:
-        cursor.close()
         db.close()
     return result
 
@@ -107,27 +126,37 @@ def insert_n_objects(objectName, objects):
 
 def get_n_objects_by_key(objectName, n=1, key='id', keyValue=1):
 
-    if isinstance(keyValue, str):
+    operator = '='
+    if isinstance(keyValue, list):
+        operator = 'IN'
+        keyValue = '(' + str(keyValue)[1:-1] + ')'
+    elif isinstance(keyValue, str):
         keyValue = '"' + keyValue + '"'
-
-    query = f'SELECT * FROM neuralplatform_{objectName.lower()} WHERE {key} = {keyValue};'
+    query = f'SELECT * FROM neuralplatform_{objectName.lower()} WHERE {key} {operator} {keyValue};'
     elements = run_select(query)
     if len(elements) > 0:
         return elements[:n]
-
     return None
 
-def update_object_by_id(objectName, id, fields):
-    changes = ""
-    for field in fields:
-        value = fields[field]
-        if isinstance(value, str):
-            value = '"' + value + '"'
-        changes += field + ' = ' + value + ', '
-    else:
-        changes = changes[:-2]
-    query = f'UPDATE neuralplatform_{objectName.lower()} SET {changes} WHERE id = {id};'
-    run_update(query)
+def update_object_by_key(objectName, key='id', keyValue=1, fields=None):
+
+    if fields:
+        operator = '='
+        if isinstance(keyValue, list):
+            operator = 'IN'
+            keyValue = '(' + str(keyValue)[1:-1] + ')'
+        elif isinstance(keyValue, str):
+            keyValue = '"' + keyValue + '"'
+        changes = ""
+        for field in fields:
+            value = fields[field]
+            if isinstance(value, str):
+                value = '"' + value + '"'
+            changes += field + ' = ' + str(value) + ', '
+        else:
+            changes = changes[:-2]
+        query = f'UPDATE neuralplatform_{objectName.lower()} SET {changes} WHERE {key} {operator} {keyValue};'
+        run_update(query)
 
 def get_projects_of_projectManager(projectManager_id):
 	query = f"SELECT project_id FROM neuralplatform_projectmanagerassignedproject WHERE projectManager_id = {projectManager_id};"
@@ -170,6 +199,24 @@ def insert_page(imgUri, ocrUri, document_id):
     query = f'INSERT INTO neuralplatform_page(imgUri, ocrUri, document_id) ' + \
             f'VALUES ("{imgUri}", "{ocrUri}", {document_id});'
     return run_insert(query)
+
+def get_pending_and_unblocked_steps():
+    query1 = 'SELECT * FROM neuralplatform_step WHERE status = "pending";'
+    pending_steps = run_select(query1)
+    unblocked_steps = []
+    if len(pending_steps) > 0:
+        pending_stepDefinitions = list(set([x['stepDefinition_id'] for x in pending_steps]))
+        unblocked_stepDefinitions = []
+        query2 = 'SELECT id, blockingStep_id FROM neuralplatform_stepdefinition;'
+        stepDefinitions = run_select(query2)
+        dependencies = {s['id']: s['blockingStep_id'] for s in stepDefinitions}
+        for pending_stepDefinition in pending_stepDefinitions:
+            sd_dependency = dependencies[pending_stepDefinition] or -1
+            if not run_exists(f'SELECT id FROM neuralplatform_step WHERE status != "done" AND stepDefinition_id = {sd_dependency}'):
+                unblocked_stepDefinitions.append(pending_stepDefinition)
+        unblocked_steps = list(filter(lambda x: x['stepDefinition_id'] in unblocked_stepDefinitions, pending_steps))
+    return unblocked_steps
+
 ######## DEPRECATED ########
 
 def get_user_pk_by_username(username):
