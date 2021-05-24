@@ -1,8 +1,9 @@
-import MySQLdb as mysql
+# import MySQLdb as mysql
+import pymysql as mysql
 import os
 import hashlib
 import json
-from .automl import BD_HOST, BD_PASS, BD_DATABASE, BD_USER
+# from .automl import BD_HOST, BD_PASS, BD_DATABASE, BD_USER
 
 def hash_password(password):
     n = 100000

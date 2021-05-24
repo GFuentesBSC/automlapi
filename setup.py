@@ -2,20 +2,21 @@ from distutils.core import setup
 setup(
   name = 'automlapi',
   packages = ['automlapi'],
-  version = '0.58',
+  version = '0.59',
   license='MIT',
   description = 'api for the AutoML project',
   author = 'Raul Garcia',
   author_email = 'raulgfuentes97@gmail.com',
   url = 'https://github.com/GFuentesBSC/automlapi',
-  download_url = 'https://github.com/GFuentesBSC/automlapi/archive/v0.58.tar.gz',
+  download_url = 'https://github.com/GFuentesBSC/automlapi/archive/v0.59.tar.gz',
   keywords = ['AUTOML', 'BOTO3', 'AWS'],   # Keywords that define your package best
   install_requires=[
           'tqdm',
           'PyPDF2',
           'boto3',
           'botocore',
-          'mysqlclient'
+          'PyMySQL'
+          # 'mysqlclient'
       ],
   classifiers=[
     'Development Status :: 3 - Alpha',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package
