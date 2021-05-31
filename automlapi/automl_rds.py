@@ -212,7 +212,7 @@ def get_pending_and_unblocked_steps():
         dependencies = {s['id']: s['blockingStep_id'] for s in stepDefinitions}
         for pending_stepDefinition in pending_stepDefinitions:
             sd_dependency = dependencies[pending_stepDefinition] or -1
-            if not run_exists(f'SELECT id FROM neuralplatform_step WHERE status NOT IN ("succeded", "error") AND stepDefinition_id = {sd_dependency}'):
+            if not run_exists(f'SELECT id FROM neuralplatform_step WHERE status NOT IN ("succeeded", "error") AND stepDefinition_id = {sd_dependency}'):
                 unblocked_stepDefinitions.append(pending_stepDefinition)
         unblocked_steps = list(filter(lambda x: x['stepDefinition_id'] in unblocked_stepDefinitions, pending_steps))
     return unblocked_steps
