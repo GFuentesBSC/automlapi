@@ -170,7 +170,7 @@ def get_bucketName_by_page_id(page_id):
             "(SELECT project_id FROM neuralplatform_dataset WHERE id = " + \
             "(SELECT dataset_id FROM neuralplatform_document WHERE id = " + \
             f"(SELECT document_id FROM neuralplatform_page WHERE id = {page_id}))));"
-        return run_select(query)[0]
+        return run_select(query)[0]['s3Bucket']
     except Exception as e:
         print(f"get_bucketName_by_page_id : Error : {e}")
         return ""
