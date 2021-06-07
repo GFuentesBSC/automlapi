@@ -163,6 +163,19 @@ def get_projects_of_projectManager(projectManager_id):
 	project_ids = run_select(query)
 	return project_ids
 
+def get_bucketName_by_page_id(page_id):
+    try:
+        query = "SELECT s3Bucket FROM neuralplatform_account WHERE id = " + \
+            "(SELECT account_id FROM neuralplatform_project WHERE id = " + \
+            "(SELECT project_id FROM neuralplatform_dataset WHERE id = " + \
+            "(SELECT dataset_id FROM neuralplatform_document WHERE id = " + \
+            f"(SELECT document_id FROM neuralplatform_page WHERE id = {page_id}))));"
+        return run_select(query)[0]
+    except Exception as e:
+        print(f"get_bucketName_by_page_id : Error : {e}")
+        return ""
+
+
 def validate_projectManager(account_code, username, hashed_password):
     accounts = get_n_objects_by_key('account', 1, 'code', account_code)
     if accounts:
