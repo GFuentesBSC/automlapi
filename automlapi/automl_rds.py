@@ -204,8 +204,9 @@ def insert_document(uploadDate, filename, extension, phase, uri, nPages, tagged,
 	return run_insert(query)
 
 def insert_request(phase, requestDate, document_id, project_id):
-	query = f'INSERT INTO neuralplatform_request(phase, requestDate, document_id, project_id, status) ' + \
-			f'VALUES ("{phase}", "{requestDate}", {document_id}, {project_id}, "pending");'
+    emptyJson = '"{}"'
+	query = f'INSERT INTO neuralplatform_request(phase, requestDate, document_id, project_id, response, status) ' + \
+			f'VALUES ("{phase}", "{requestDate}", {document_id}, {project_id}, {emptyJson}, "pending");'
 	return run_insert(query)
 
 def insert_page(imgUri, ocrUri, document_id):
