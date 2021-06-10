@@ -138,6 +138,33 @@ def get_n_objects_by_key(objectName, n=1, key='id', keyValue=1):
         return elements[:n]
     return None
 
+def update_object_by_conditions(objectName, fields, conditions):
+
+    parsed_fields = ""
+    parsed_conditions = ""
+    for key in fields:
+        value = fields[key]
+        if isinstance(value, str):
+            value = '"' + value + '"'
+        parsed_fields += f'{key} = {value}, '
+    else:
+        parsed_fields = parsed_fields[:-2]
+
+    for key in conditions:
+        operator = '='
+        value = conditions[key]
+        if isinstance(value, list):
+            operator = 'IN'
+            value = '(' + str(value)[1:-1] + ')'
+        elif isinstance(value, str):
+            value = '"' + value + '"'
+        parsed_conditions += f'{key} {operator} {value} AND '
+    else:
+        parsed_conditions = parsed_conditions[:-4]
+    query = f'UPDATE neuralplatform_{objectName.lower()} SET {parsed_fields} WHERE {parsed_conditions};'
+    run_update(query)
+
+
 def update_object_by_key(objectName, key='id', keyValue=1, fields=None):
 
     if fields:
@@ -205,9 +232,9 @@ def insert_document(uploadDate, filename, extension, phase, uri, nPages, tagged,
 
 def insert_request(phase, requestDate, document_id, project_id):
     emptyJson = '"{}"'
-	query = f'INSERT INTO neuralplatform_request(phase, requestDate, document_id, project_id, response, status) ' + \
-			f'VALUES ("{phase}", "{requestDate}", {document_id}, {project_id}, {emptyJson}, "pending");'
-	return run_insert(query)
+    query = f'INSERT INTO neuralplatform_request(phase, requestDate, document_id, project_id, response, status) ' + \
+            f'VALUES ("{phase}", "{requestDate}", {document_id}, {project_id}, {emptyJson}, "pending");'
+    return run_insert(query)
 
 def insert_page(imgUri, ocrUri, document_id):
     query = f'INSERT INTO neuralplatform_page(imgUri, ocrUri, document_id) ' + \
