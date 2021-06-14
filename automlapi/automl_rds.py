@@ -269,7 +269,7 @@ def get_pending_and_unblocked_steps():
     return unblocked_steps
 
 def insert_manualStep(startTime, result, request_id):
-    query = f'INSERT INTO neuralplatform_manualStep(startTime, beingTagged, completed, result, request_id) ' + \
+    query = f'INSERT INTO neuralplatform_manualstep(startTime, beingTagged, completed, result, request_id) ' + \
             f'VALUES ("{startTime}", 0, 0, "{result}", {request_id});'
     return run_insert(query)
 
