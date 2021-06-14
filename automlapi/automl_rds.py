@@ -32,7 +32,6 @@ def run_exists(query):
 
 def run_select(query):
     result = []
-
     try:
         db = mysql.connect(host=BD_HOST,
                 database=BD_DATABASE,
@@ -164,6 +163,18 @@ def update_object_by_conditions(objectName, fields, conditions):
     query = f'UPDATE neuralplatform_{objectName.lower()} SET {parsed_fields} WHERE {parsed_conditions};'
     run_update(query)
 
+def get_pagesInfo_of_request(request_id):
+    pagesInfo = {"pagesInfo": []}
+    request   = get_n_objects_by_key('request', 1, 'id', request_id)[0]
+    pages     = get_n_objects_by_key('page', None, 'document_id', int(request['document_id'])) or []
+    for page in pages:
+        class_name = ""
+        if page['tagged']:
+            classification = get_n_objects_by_key('classification', 1, 'page_id', int(page['id']))[0]
+            class_id = int(classification['classDefinition_id'])
+            class_name = get_n_objects_by_key('classDefinition', 1, 'id', class_id)[0]['name']
+        pagesInfo['pagesInfo'].append({"uri": page['imgUri'], "class": class_name})
+    return pagesInfo
 
 def update_object_by_key(objectName, key='id', keyValue=1, fields=None):
 
@@ -201,7 +212,6 @@ def get_bucketName_by_page_id(page_id):
     except Exception as e:
         print(f"get_bucketName_by_page_id : Error : {e}")
         return ""
-
 
 def validate_projectManager(account_code, username, hashed_password):
     accounts = get_n_objects_by_key('account', 1, 'code', account_code)
@@ -257,6 +267,11 @@ def get_pending_and_unblocked_steps():
                 unblocked_stepDefinitions.append(pending_stepDefinition)
         unblocked_steps = list(filter(lambda x: x['stepDefinition_id'] in unblocked_stepDefinitions, pending_steps))
     return unblocked_steps
+
+def insert_manualStep(startTime, result, request_id):
+    query = f'INSERT INTO neuralplatform_manualStep(startTime, beingTagged, completed, result, request_id) ' + \
+            f'VALUES ("{startTime}", 0, 0, "{result}", {request_id});'
+    return run_insert(query)
 
 ######## DEPRECATED ########
 
