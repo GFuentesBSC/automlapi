@@ -235,9 +235,9 @@ def validate_user(account_code, username, password):
     hashed_password = hash_password(password)
     return validate_admin(account_code, username, hashed_password) or validate_projectManager(account_code, username, hashed_password)
 
-def insert_document(uploadDate, filename, extension, phase, uri, nPages, training, dataset_id, uploadMethod_id):
-	query = f'INSERT INTO neuralplatform_document(uploadDate, name, extension, phase, uri, nPages, training, dataset_id, uploadMethod_id) ' + \
-			f'VALUES ("{uploadDate}", "{filename}", "{extension}", "{phase}", "{uri}", {nPages}, {training}, {dataset_id}, {uploadMethod_id});'
+def insert_document(uploadDate, filename, extension, phase, uri, nPages, training, dataset_id, uploadMethod_id, project_id):
+	query = f'INSERT INTO neuralplatform_document(uploadDate, name, extension, phase, uri, nPages, training, dataset_id, uploadMethod_id, project_id) ' + \
+			f'VALUES ("{uploadDate}", "{filename}", "{extension}", "{phase}", "{uri}", {nPages}, {training}, {dataset_id}, {uploadMethod_id}, {project_id});'
 	return run_insert(query)
 
 def insert_request(phase, requestDate, document_id, project_id):
