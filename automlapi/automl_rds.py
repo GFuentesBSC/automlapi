@@ -272,9 +272,9 @@ def classify_page(page_id, class_id):
     run_insert(f"INSERT INTO neuralplatform_classification(classDefinition_id, page_id) VALUES ({class_id}, {page_id});")
     update_object_by_key('page', 'id', page_id, {'tagged': True})
 
-def insert_manualStep(startTime, result, request_id):
-    query = f'INSERT INTO neuralplatform_manualstep(startTime, beingTagged, completed, result, request_id) ' + \
-            f'VALUES ("{startTime}", 0, 0, "{result}", {request_id});'
+def insert_manualStep(result, request_id):
+    query = f'INSERT INTO neuralplatform_manualstep(beingTagged, completed, result, request_id) ' + \
+            f'VALUES (0, 0, "{result}", {request_id});'
     return run_insert(query)
 
 ######## DEPRECATED ########
