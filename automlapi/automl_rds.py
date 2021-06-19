@@ -85,6 +85,21 @@ def run_update(query):
 	finally:
 		db.close()
 
+def run_delete(query):
+	try:
+		db = mysql.connect(host=BD_HOST,
+							database=BD_DATABASE,
+							user=BD_USER,
+							password=BD_PASS)
+
+		cursor = db.cursor()
+		cursor.execute(query)
+		db.commit()
+	except Exception as e:
+		print("run_delete - ERROR " + str(e))
+	finally:
+		db.close()
+
 def run_multiple_insert(queries):
     pks = []
     try:
@@ -269,6 +284,8 @@ def get_pending_and_unblocked_steps():
     return unblocked_steps
 
 def classify_page(page_id, class_id):
+    if run_exists(f"SELECT DISTINCT 1 FROM neuralplatform_classification WHERE page_id = {page_id};"):
+        run_delete(f"DELETE FROM neuralplatform_classification WHERE page_id = {page_id};")
     run_insert(f"INSERT INTO neuralplatform_classification(classDefinition_id, page_id) VALUES ({class_id}, {page_id});")
     update_object_by_key('page', 'id', page_id, {'tagged': True})
 
