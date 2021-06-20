@@ -6,6 +6,12 @@ client_ecs = boto3.client('ecs',
 						aws_secret_access_key=AWS_SEC_ACC_KEY,
 						region_name=AWS_REGION_NAME)
 
+def get_servicesArns_of_cluster(cluster_name):
+	return client_ecs.list_services(cluster=cluster_name)['serviceArns']
+
+def get_service(serviceArn):
+	return client_ecs.describe_services(services=[serviceArn])['services'][0]
+
 def update_flask_service_instances(service, num_instances, cluster_name):
 	num_instances = min(num_instances, 20)
 	num_instances = max(num_instances, 0)
