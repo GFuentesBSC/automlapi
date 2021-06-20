@@ -16,6 +16,10 @@ def get_max_instances(cluster_name, service_name):
 	# TODO: IMPLEMENT
 	return 5
 
+def update_service_desiredCount(cluster_name, service_name, desiredCount):
+	client_ecs.update_service(cluster=cluster_name, service=service_name, desiredCount=desiredCount)
+
+### DEPRECATED ######
 def update_flask_service_instances(service, num_instances, cluster_name):
 	num_instances = min(num_instances, 20)
 	num_instances = max(num_instances, 0)
