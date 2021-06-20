@@ -9,8 +9,12 @@ client_ecs = boto3.client('ecs',
 def get_servicesArns_of_cluster(cluster_name):
 	return client_ecs.list_services(cluster=cluster_name)['serviceArns']
 
-def get_service(serviceArn):
-	return client_ecs.describe_services(services=[serviceArn])['services'][0]
+def get_service(cluster_name, service_name):
+	return client_ecs.describe_services(cluster=cluster_name, services=[service_name])['services'][0]
+
+def get_max_instances(cluster_name, service_name):
+	# TODO: IMPLEMENT
+	return 5
 
 def update_flask_service_instances(service, num_instances, cluster_name):
 	num_instances = min(num_instances, 20)
