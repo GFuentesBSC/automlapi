@@ -1,5 +1,7 @@
 import boto3
 from .automl import AWS_ACC_KEY_ID, AWS_SEC_ACC_KEY, AWS_REGION_NAME
+import time
+from botocore.exceptions import ClientError
 
 client_ecs = boto3.client('ecs',
 						aws_access_key_id=AWS_ACC_KEY_ID,
@@ -7,17 +9,32 @@ client_ecs = boto3.client('ecs',
 						region_name=AWS_REGION_NAME)
 
 def get_servicesArns_of_cluster(cluster_name):
-	return client_ecs.list_services(cluster=cluster_name)['serviceArns']
+	while True:
+		try:
+			return client_ecs.list_services(cluster=cluster_name)['serviceArns']
+		except ClientError:
+			time.sleep(1)
+			pass
 
 def get_service(cluster_name, service_name):
-	return client_ecs.describe_services(cluster=cluster_name, services=[service_name])['services'][0]
+	while True:
+		try:
+			return client_ecs.describe_services(cluster=cluster_name, services=[service_name])['services'][0]
+		except ClientError:
+			time.sleep(1)
+			pass
 
 def get_max_instances(cluster_name, service_name):
 	# TODO: IMPLEMENT
 	return 5
 
 def update_service_desiredCount(cluster_name, service_name, desiredCount):
-	client_ecs.update_service(cluster=cluster_name, service=service_name, desiredCount=desiredCount)
+	while True:
+		try:
+			client_ecs.update_service(cluster=cluster_name, service=service_name, desiredCount=desiredCount)
+		except ClientError:
+			time.sleep(1)
+			pass
 
 ### DEPRECATED ######
 def update_flask_service_instances(service, num_instances, cluster_name):
@@ -37,8 +54,8 @@ def update_flask_service_instances(service, num_instances, cluster_name):
 
 def get_service_instaces_status(cluster, service_name):
 	print(f"get_service_instaces_status : INFO : Getting info of service {service_name} (cluster {cluster})...")
-	response = client_ecs.describe_services(cluster=cluster, services=[service_name])
 	try:
+		response = client_ecs.describe_services(cluster=cluster, services=[service_name])
 		service = response['services'][0]
 		desired = service['desiredCount']
 		running = service['runningCount']
