@@ -266,20 +266,24 @@ def insert_page(imgUri, ocrUri, document_id):
     return run_insert(query)
 
 def get_pending_and_unblocked_steps():
-    query1 = 'SELECT * FROM neuralplatform_step WHERE status = "pending";'
-    pending_steps = run_select(query1)
+    # TODO: # OPTIMIZE:  this
+    # query1 = 'SELECT neuralplatform_step.id, neuralplatform_request.requestDate FROM neuralplatform_step INNER JOIN ' + \
+    #          'neuralplatform_request ON neuralplatform_step.request_id=neuralplatform_request.id WHERE neuralplatform_step.status = "pending" ORDER BY neuralplatform_request.requestDate ASC;'
     unblocked_steps = []
-    if len(pending_steps) > 0:
-        pending_stepDefinitions = list(set([x['stepDefinition_id'] for x in pending_steps]))
-        unblocked_stepDefinitions = []
-        query2 = 'SELECT id, blockingStep_id FROM neuralplatform_stepdefinition;'
-        stepDefinitions = run_select(query2)
-        dependencies = {s['id']: s['blockingStep_id'] for s in stepDefinitions}
-        for pending_stepDefinition in pending_stepDefinitions:
-            sd_dependency = dependencies[pending_stepDefinition] or -1
-            if not run_exists(f'SELECT id FROM neuralplatform_step WHERE status NOT IN ("succeeded") AND stepDefinition_id = {sd_dependency}'):
-                unblocked_stepDefinitions.append(pending_stepDefinition)
-        unblocked_steps = list(filter(lambda x: x['stepDefinition_id'] in unblocked_stepDefinitions, pending_steps))
+    for request in run_select('SELECT * FROM neuralplatform_request WHERE status = "running";'):
+        query1 = f'SELECT * FROM neuralplatform_step WHERE status = "pending" AND request_id = {int(request["id"])};'
+        pending_steps = run_select(query1)
+        if len(pending_steps) > 0:
+            pending_stepDefinitions = list(set([x['stepDefinition_id'] for x in pending_steps]))
+            unblocked_stepDefinitions = []
+            query2 = 'SELECT id, blockingStep_id FROM neuralplatform_stepdefinition;'
+            stepDefinitions = run_select(query2)
+            dependencies = {s['id']: s['blockingStep_id'] for s in stepDefinitions}
+            for pending_stepDefinition in pending_stepDefinitions:
+                sd_dependency = dependencies[pending_stepDefinition] or -1
+                if not run_exists(f'SELECT id FROM neuralplatform_step WHERE status NOT IN ("succeeded") AND stepDefinition_id = {sd_dependency}'):
+                    unblocked_stepDefinitions.append(pending_stepDefinition)
+            unblocked_steps = list(filter(lambda x: x['stepDefinition_id'] in unblocked_stepDefinitions, pending_steps))
     return unblocked_steps
 
 def classify_page(page_id, class_id):
