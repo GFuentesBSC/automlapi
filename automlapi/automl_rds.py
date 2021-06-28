@@ -220,8 +220,7 @@ def get_bucketName_by_page_id(page_id):
     try:
         query = "SELECT s3Bucket FROM neuralplatform_account WHERE id = " + \
             "(SELECT account_id FROM neuralplatform_project WHERE id = " + \
-            "(SELECT project_id FROM neuralplatform_dataset WHERE id = " + \
-            "(SELECT dataset_id FROM neuralplatform_document WHERE id = " + \
+            "(SELECT project_id FROM neuralplatform_document WHERE id = " + \
             f"(SELECT document_id FROM neuralplatform_page WHERE id = {page_id}))));"
         return run_select(query)[0]['s3Bucket']
     except Exception as e:
