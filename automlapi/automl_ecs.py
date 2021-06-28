@@ -32,9 +32,11 @@ def update_service_desiredCount(cluster_name, service_name, desiredCount):
 	while True:
 		try:
 			client_ecs.update_service(cluster=cluster_name, service=service_name, desiredCount=desiredCount)
+			break
 		except ClientError:
 			time.sleep(1)
 			pass
+
 
 ### DEPRECATED ######
 def update_flask_service_instances(service, num_instances, cluster_name):

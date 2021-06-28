@@ -204,7 +204,7 @@ def update_object_by_key(objectName, key='id', keyValue=1, fields=None):
         for field in fields:
             value = fields[field]
             if isinstance(value, str):
-                value = '"' + value + '"'
+                value = "'" + value + "'"
             changes += field + ' = ' + str(value) + ', '
         else:
             changes = changes[:-2]
