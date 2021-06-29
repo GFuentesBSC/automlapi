@@ -283,7 +283,7 @@ def get_pending_and_unblocked_steps():
                 sd_dependency = dependencies[pending_stepDefinition] or -1
                 if not run_exists(f'SELECT id FROM neuralplatform_step WHERE status NOT IN ("succeeded") AND stepDefinition_id = {sd_dependency} AND request_id = {int(request["id"])};'):
                     unblocked_stepDefinitions.append(pending_stepDefinition)
-            unblocked_steps.append(list(filter(lambda x: x['stepDefinition_id'] in unblocked_stepDefinitions, pending_steps)))
+            unblocked_steps += list(filter(lambda x: x['stepDefinition_id'] in unblocked_stepDefinitions, pending_steps))
     return unblocked_steps
 
 def classify_page(page_id, class_id):
