@@ -294,7 +294,7 @@ def classify_page(page_id, class_id):
 
 def insert_manualStep(result, request_id):
     query = f'INSERT INTO neuralplatform_manualstep(status, result, request_id) ' + \
-            f'VALUES ("pending", "{result}", {request_id});'
+            f"VALUES ('pending', '{result}', {request_id});"
     return run_insert(query)
 
 ######## DEPRECATED ########
