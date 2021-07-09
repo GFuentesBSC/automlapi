@@ -71,19 +71,23 @@ def run_insert(query):
 	return pk
 
 def run_update(query):
-	try:
-		db = mysql.connect(host=BD_HOST,
-							database=BD_DATABASE,
-							user=BD_USER,
-							password=BD_PASS)
+    try:
+        db = mysql.connect(host=BD_HOST,
+                database=BD_DATABASE,
+                user=BD_USER,
+                password=BD_PASS)
 
-		cursor = db.cursor()
-		cursor.execute(query)
-		db.commit()
-	except Exception as e:
-		print("run_update - ERROR " + str(e))
-	finally:
-		db.close()
+        cursor = db.cursor()
+        if isinstance(query, list):
+            for subquery in query:
+                cursor.execute(subquery)
+        else:
+            cursor.execute(query)
+        db.commit()
+    except Exception as e:
+        print("run_update - ERROR " + str(e))
+    finally:
+        db.close()
 
 def run_delete(query):
 	try:
