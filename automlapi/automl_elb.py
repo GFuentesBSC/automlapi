@@ -100,3 +100,7 @@ def get_targets_health(target_group_arn):
 def get_num_unhealthy_targets(target_group_arn):
 	targets_health = get_targets_health(target_group_arn)
 	return len(list(filter(lambda x: x.lower() == 'unhealthy', targets_health)))
+
+def get_num_healthy_targets(target_group_arn):
+	targets_health = get_targets_health(target_group_arn)
+	return len(list(filter(lambda x: x.lower() == 'healthy', targets_health)))
