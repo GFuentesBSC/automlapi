@@ -92,3 +92,11 @@ def add_rules(listener_arn, mappings):
 		else:
 			print(f'add_rules : INFO : Added rule for {path} -> {mappings[path]}')
 	return True
+
+def get_targets_health(target_group_arn):
+	targets_health = client.describe_target_health(TargetGroupArn=target_group_arn)['TargetHealthDescriptions']
+	return [x['TargetHealth']['State'] for x in targets_health]
+
+def get_num_unhealthy_targets(target_group_arn):
+	targets_health = get_targets_health(target_group_arn)
+	return len(list(filter(lambda x: x.lower() == 'unhealthy', targets_health)))
