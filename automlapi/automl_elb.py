@@ -94,7 +94,7 @@ def add_rules(listener_arn, mappings):
 	return True
 
 def get_targets_health(target_group_arn):
-	targets_health = client.describe_target_health(TargetGroupArn=target_group_arn)['TargetHealthDescriptions']
+	targets_health = client_elb.describe_target_health(TargetGroupArn=target_group_arn)['TargetHealthDescriptions']
 	return [x['TargetHealth']['State'] for x in targets_health]
 
 def get_num_unhealthy_targets(target_group_arn):
