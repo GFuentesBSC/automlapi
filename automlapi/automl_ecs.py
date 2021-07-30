@@ -39,7 +39,7 @@ def update_service_desiredCount(cluster_name, service_name, desiredCount):
 
 def drain_instance(cluster_name, instance_id):
 	instances_arns = client_ecs.list_container_instances(cluster=cluster_name)['containerInstanceArns']
-	container_instances = client_ecs.describe_container_instances(cluster=cluster_name, containerInstances=instances_arns)
+	container_instances = client_ecs.describe_container_instances(cluster=cluster_name, containerInstances=instances_arns)['containerInstances']
 	for container_instance in container_instances:
 		if container_instance['ec2InstanceId'] == instance_id:
 			container_instance_arn = container_instance['containerInstanceArn']
@@ -48,7 +48,7 @@ def drain_instance(cluster_name, instance_id):
 
 def activate_instance(cluster_name, instance_id):
 	instances_arns = client_ecs.list_container_instances(cluster=cluster_name)['containerInstanceArns']
-	container_instances = client_ecs.describe_container_instances(cluster=cluster_name, containerInstances=instances_arns)
+	container_instances = client_ecs.describe_container_instances(cluster=cluster_name, containerInstances=instances_arns)['containerInstances']
 	for container_instance in container_instances:
 		if container_instance['ec2InstanceId'] == instance_id:
 			container_instance_arn = container_instance['containerInstanceArn']
