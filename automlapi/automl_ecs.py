@@ -38,10 +38,22 @@ def update_service_desiredCount(cluster_name, service_name, desiredCount):
 			pass
 
 def drain_instance(cluster_name, instance_id):
-	client_ecs.update_container_instances_state(cluster=cluster_name, containerInstances=[instance_id], status='DRAINING')
+	instances_arns = client_ecs.list_container_instances(cluster=cluster_name)['containerInstanceArns']
+	container_instances = client_ecs.describe_container_instances(cluster=cluster_name, containerInstances=instances_arns)
+	for container_instance in container_instances:
+		if container_instance['ec2InstanceId'] == instance_id:
+			container_instance_arn = container_instance['containerInstanceArn']
+			client_ecs.update_container_instances_state(cluster=cluster_name, containerInstances=[container_instance_arn], status='DRAINING')
+			break
 
 def activate_instance(cluster_name, instance_id):
-	client_ecs.update_container_instances_state(cluster=cluster_name, containerInstances=[instance_id], status='ACTIVE')
+	instances_arns = client_ecs.list_container_instances(cluster=cluster_name)['containerInstanceArns']
+	container_instances = client_ecs.describe_container_instances(cluster=cluster_name, containerInstances=instances_arns)
+	for container_instance in container_instances:
+		if container_instance['ec2InstanceId'] == instance_id:
+			container_instance_arn = container_instance['containerInstanceArn']
+			client_ecs.update_container_instances_state(cluster=cluster_name, containerInstances=[container_instance_arn], status='ACTIVE')
+			break
 
 
 ### DEPRECATED ######
