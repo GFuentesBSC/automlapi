@@ -37,6 +37,12 @@ def update_service_desiredCount(cluster_name, service_name, desiredCount):
 			time.sleep(1)
 			pass
 
+def drain_instance(cluster_name, instance_id):
+	client_ecs.update_container_instances_state(cluster=cluster_name, containerInstances=[instance_id], status='DRAINING')
+
+def activate_instance(cluster_name, instance_id):
+	client_ecs.update_container_instances_state(cluster=cluster_name, containerInstances=[instance_id], status='ACTIVE')
+
 
 ### DEPRECATED ######
 def update_flask_service_instances(service, num_instances, cluster_name):

@@ -104,3 +104,13 @@ def get_num_unhealthy_targets(target_group_arn):
 def get_num_healthy_targets(target_group_arn):
 	targets_health = get_targets_health(target_group_arn)
 	return len(list(filter(lambda x: x.lower() == 'healthy', targets_health)))
+
+def get_target_ids(target_group_arn):
+	targets = client_elb.describe_target_health(TargetGroupArn=target_group_arn)['TargetHealthDescriptions']
+	return [x['Target']['Id'] for x in targets if x['TargetHealth']['State'].lower() == 'healthy']
+
+def drain_target(target_group_arn, instance_id):
+	client_elb.deregister_targets(TargetGroupArn=target_group_arn, Targets=[{'Id': instance_id}])
+
+def register_target(target_group_arn, instance_id):
+	client_elb.register_targets(TargetGroupArn=target_group_arn, Targets=[{'Id': instance_id}])
