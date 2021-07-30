@@ -27,4 +27,4 @@ def launch_instances_for_flask(num_instances, cluster_name, template_id, version
 	return launched_instances_ids
 
 def terminate_instances(instance_ids):
-    response2 = client_ec2.terminate_instances(InstanceIds = instances_ids)
+    response2 = client_ec2.terminate_instances(InstanceIds = instance_ids)
