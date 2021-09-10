@@ -185,11 +185,11 @@ def update_object_by_conditions(objectName, fields, conditions):
 def get_pagesInfo_of_request(request_id):
     pagesInfo = {"pagesInfo": []}
     request   = get_n_objects_by_key('request', 1, 'id', request_id)[0]
-    pages     = get_n_objects_by_key('page', None, 'document_id', int(request['document_id'])) or []
+    pages     = get_n_objects_by_key('productionPage', None, 'productionDocument_id', int(request['productionDocument_id'])) or []
     for page in pages:
         class_name = ""
         if page['tagged']:
-            classification = get_n_objects_by_key('classification', 1, 'page_id', int(page['id']))[0]
+            classification = get_n_objects_by_key('ProductionClassification', 1, 'productionPage_id', int(page['id']))[0]
             class_id = int(classification['classDefinition_id'])
             class_name = get_n_objects_by_key('classDefinition', 1, 'id', class_id)[0]['name']
         pagesInfo['pagesInfo'].append({"uri": page['imgUri'], "class": class_name})
@@ -258,15 +258,25 @@ def insert_document(uploadDate, filename, extension, phase, uri, nPages, trainin
 			f'VALUES ("{uploadDate}", "{filename}", "{extension}", "{phase}", "{uri}", {nPages}, {training}, {dataset_id}, {uploadMethod_id}, {project_id});'
 	return run_insert(query)
 
-def insert_request(phase, requestDate, document_id, project_id):
+def insert_productionDocument(uploadDate, filename, extension, phase, uri, nPages, training, dataset_id, uploadMethod_id, project_id):
+	query = f'INSERT INTO neuralplatform_productiondocument(uploadDate, name, extension, phase, uri, nPages, training, dataset_id, uploadMethod_id, project_id) ' + \
+			f'VALUES ("{uploadDate}", "{filename}", "{extension}", "{phase}", "{uri}", {nPages}, {training}, {dataset_id}, {uploadMethod_id}, {project_id});'
+	return run_insert(query)
+
+def insert_request(phase, requestDate, productionDocument_id, project_id):
     emptyJson = '"{}"'
-    query = f'INSERT INTO neuralplatform_request(phase, requestDate, document_id, project_id, response, status) ' + \
-            f'VALUES ("{phase}", "{requestDate}", {document_id}, {project_id}, {emptyJson}, "pending");'
+    query = f'INSERT INTO neuralplatform_request(phase, requestDate, productionDocument_id, project_id, response, status) ' + \
+            f'VALUES ("{phase}", "{requestDate}", {productionDocument_id}, {project_id}, {emptyJson}, "pending");'
     return run_insert(query)
 
 def insert_page(imgUri, ocrUri, document_id):
     query = f'INSERT INTO neuralplatform_page(imgUri, ocrUri, document_id) ' + \
             f'VALUES ("{imgUri}", "{ocrUri}", {document_id});'
+    return run_insert(query)
+
+def insert_productionPage(imgUri, ocrUri, productionDocument_id):
+    query = f'INSERT INTO neuralplatform_productionpage(imgUri, ocrUri, productionDocument_id) ' + \
+            f'VALUES ("{imgUri}", "{ocrUri}", {productionDocument_id});'
     return run_insert(query)
 
 def get_pending_and_unblocked_steps():
