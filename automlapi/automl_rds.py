@@ -259,8 +259,8 @@ def insert_document(uploadDate, filename, extension, uri, nPages, training, data
 	return run_insert(query)
 
 def insert_productionDocument(uploadDate, filename, extension, uri, nPages, training, dataset_id, uploadMethod_id, project_id):
-    	query = f'INSERT INTO neuralplatform_productiondocument(uploadDate, name, extension, uri, nPages, training, dataset_id, uploadMethod_id, project_id) ' + \
-			f'VALUES ("{uploadDate}", "{filename}", "{extension}", "{uri}", {nPages}, {training}, {dataset_id}, {uploadMethod_id}, {project_id});'
+	query = f'INSERT INTO neuralplatform_productiondocument(uploadDate, name, extension, uri, nPages, training, dataset_id, uploadMethod_id, project_id) ' + \
+		f'VALUES ("{uploadDate}", "{filename}", "{extension}", "{uri}", {nPages}, {training}, {dataset_id}, {uploadMethod_id}, {project_id});'
 	return run_insert(query)
 
 def insert_request(phase, requestDate, productionDocument_id, project_id):
