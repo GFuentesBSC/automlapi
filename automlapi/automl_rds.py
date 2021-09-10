@@ -317,6 +317,12 @@ def classify_page(page_id, class_id):
     run_insert(f"INSERT INTO neuralplatform_classification(classDefinition_id, page_id) VALUES ({class_id}, {page_id});")
     update_object_by_key('page', 'id', page_id, {'tagged': True})
 
+def classify_productionPage(productionPage_id, class_id):
+    if run_exists(f"SELECT DISTINCT 1 FROM neuralplatform_productionClassification WHERE productionPage_id = {productionPage_id};"):
+        run_delete(f"DELETE FROM neuralplatform_productionClassification WHERE productionPage_id = {productionPage_id};")
+    run_insert(f"INSERT INTO neuralplatform_productionClassification(classDefinition_id, productionPage_id) VALUES ({class_id}, {productionPage_id});")
+    update_object_by_key('productionPage', 'id', productionPage_id, {'tagged': True})
+
 def insert_manualStep(result, request_id):
     query = f"INSERT INTO neuralplatform_manualstep(status, result, request_id) " + \
             f"VALUES ('pending', '{json.dumps(result)}', {request_id});"
