@@ -231,6 +231,22 @@ def exists_object(objectName, conditions):
     query = f'SELECT * FROM neuralplatform_{objectName.lower()} WHERE {parsed_conditions};'
     return run_exists(query)
 
+def get_objects_by_conditions(objectName, conditions):
+    parsed_conditions = ""
+    for key in conditions:
+        operator = '='
+        value = conditions[key]
+        if isinstance(value, list):
+            operator = 'IN'
+            value = '(' + str(value)[1:-1] + ')'
+        elif isinstance(value, str):
+            value = '"' + value + '"'
+        parsed_conditions += f'{key} {operator} {value} AND '
+    else:
+        parsed_conditions = parsed_conditions[:-4]
+    query = f'SELECT * FROM neuralplatform_{objectName.lower()} WHERE {parsed_conditions};'
+    return run_select(query)
+
 def get_projects_of_projectManager(projectManager_id):
 	query = f"SELECT project_id FROM neuralplatform_projectmanagerassignedproject WHERE projectManager_id = {projectManager_id};"
 	project_ids = run_select(query)
