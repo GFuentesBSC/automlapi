@@ -17,7 +17,7 @@ delta_days = 3
 start_time = datetime.now() - timedelta(days=delta_days)
 end_time = datetime.now()
 
-def client_cw():
+def get_client():
 	return client_cw
 
 def update_metric_info(metricName, metricValue):
