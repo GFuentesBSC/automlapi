@@ -56,7 +56,7 @@ def activate_instance(cluster_name, instance_id):
 			break
 
 def run_model_deployment(version_id, model_uri):
-	client_ecs.run_task(
+	response = client_ecs.run_task(
 	    launchType='FARGATE',
 	    cluster='arn:aws:ecs:eu-west-3:749868801319:cluster/FargateCluster',
 		    networkConfiguration={
