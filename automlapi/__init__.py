@@ -8,5 +8,6 @@ from .automl_codebuild import *
 from .automl_ec2 import *
 from .automl_elb import *
 from .automl_ecs import *
+from .automl_sagemaker import *
 from .automl_s3 import *
 from .automlClient import APIUser, private_upload_dataset, make_lst

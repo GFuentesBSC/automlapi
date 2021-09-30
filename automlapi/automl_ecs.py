@@ -55,6 +55,42 @@ def activate_instance(cluster_name, instance_id):
 			client_ecs.update_container_instances_state(cluster=cluster_name, containerInstances=[container_instance_arn], status='ACTIVE')
 			break
 
+def run_model_deployment(version_id, model_uri):
+	client_ecs.run_task(
+	    launchType='FARGATE',
+	    cluster='arn:aws:ecs:eu-west-3:749868801319:cluster/FargateCluster',
+		    networkConfiguration={
+		        'awsvpcConfiguration': {
+		            'subnets': [
+		                'subnet-60c56d09',
+		            ],
+		            'securityGroups': [
+		                'sg-ffec8896',
+		            ],
+		            'assignPublicIp': 'ENABLED'
+		        }
+		    },
+		    overrides={
+		        'containerOverrides': [
+		            {
+		                'name': 'main',
+		                'environment': [
+		                    {
+		                        'name': 'MODEL_URI',
+		                        'value': str(model_uri)
+		                    },
+		                    {
+		                        'name': 'VERSION_ID',
+		                        'value': str(version_id)
+		                    },
+		                ],
+		            },
+		        ],
+		    },
+		    referenceId='testing-fargate-task-1',
+		    taskDefinition='sagemaker_deploy'
+		)
+	return response['ResponseMetadata']['HTTPStatusCode']
 
 ### DEPRECATED ######
 def update_flask_service_instances(service, num_instances, cluster_name):
