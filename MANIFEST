@@ -13,4 +13,5 @@ automlapi\automl_ecs.py
 automlapi\automl_elb.py
 automlapi\automl_rds.py
 automlapi\automl_s3.py
+automlapi\automl_sagemaker.py
 automlapi\tests.py

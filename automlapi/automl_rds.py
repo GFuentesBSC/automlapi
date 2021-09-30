@@ -162,21 +162,27 @@ def update_object_by_conditions(objectName, fields, conditions):
     parsed_conditions = ""
     for key in fields:
         value = fields[key]
-        if isinstance(value, str):
-            value = '"' + value + '"'
-        parsed_fields += f'{key} = {value}, '
+        if value is None:
+            parsed_fields += f'{key} = NULL, '
+        else:
+            if isinstance(value, str):
+                value = '"' + value + '"'
+            parsed_fields += f'{key} = {value}, '
     else:
         parsed_fields = parsed_fields[:-2]
 
     for key in conditions:
         operator = '='
         value = conditions[key]
-        if isinstance(value, list):
-            operator = 'IN'
-            value = '(' + str(value)[1:-1] + ')'
-        elif isinstance(value, str):
-            value = '"' + value + '"'
-        parsed_conditions += f'{key} {operator} {value} AND '
+        if value is None:
+            parsed_conditions += f'{key} is NULL AND '
+        else:
+            if isinstance(value, list):
+                operator = 'IN'
+                value = '(' + str(value)[1:-1] + ')'
+            elif isinstance(value, str):
+                value = '"' + value + '"'
+            parsed_conditions += f'{key} {operator} {value} AND '
     else:
         parsed_conditions = parsed_conditions[:-4]
     query = f'UPDATE neuralplatform_{objectName.lower()} SET {parsed_fields} WHERE {parsed_conditions};'
