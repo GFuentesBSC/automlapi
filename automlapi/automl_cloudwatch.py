@@ -21,6 +21,7 @@ def find_best_period(start_time, end_time):
 	period = time_delta // max_data_points
 	if period % 60 > 0:
 	    period += (60 - period % 60)
+	period = max(period, 1)
 	return period
 
 def update_production_documents_metric(metric_name, project_id, value):
@@ -80,12 +81,7 @@ def get_production_documents_metric(metric_name, project_id, start_time=None, en
 	)
 	try:
 		values = response['MetricDataResults'][0]['Values']
-		if len(values) > 1:
-			return values[-1] - values[0]
-		elif len(values) == 1:
-			return values[0]
-		else:
-			return 0
+		return sum(values)
 	except Exception as e:
 		print(f"get_production_documents_metric : ERROR : {e}")
 		return 0
