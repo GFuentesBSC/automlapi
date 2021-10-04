@@ -15,6 +15,14 @@ def get_default_initial_time():
 	# 1 year ago
 	return datetime.now() - timedelta(days=1*365)
 
+def find_best_period(start_time, end_time):
+	max_data_points = 100800
+	time_delta = int((end_time-start_time).total_seconds())
+	period = time_delta // max_data_points
+	if period % 60 > 0:
+	    period += (60 - period % 60)
+	return period
+
 def update_production_documents_metric(metric_name, project_id, value):
 
 	response = client_cw.put_metric_data(
@@ -42,6 +50,7 @@ def get_production_documents_metric(metric_name, project_id, start_time=None, en
 
 	start_time = start_time or get_default_initial_time()
 	end_time   = end_time   or datetime.now()
+	period     = find_best_period(start_time, end_time)
 
 	response = client_cw.get_metric_data(
 	    MetricDataQueries=[
@@ -58,7 +67,7 @@ def get_production_documents_metric(metric_name, project_id, start_time=None, en
 	                        },
 	                    ]
 	                },
-	                'Period': 60, #The granularity, in seconds, of the returned data points.
+	                'Period': period,
 	                'Stat': 'Sum',
 	                'Unit': 'Count'
 	            },
@@ -67,8 +76,7 @@ def get_production_documents_metric(metric_name, project_id, start_time=None, en
 	    ],
 	    StartTime = start_time,
 	    EndTime = end_time,
-	    ScanBy = 'TimestampAscending',
-	    #MaxDatapoints=24*60*60,
+	    ScanBy = 'TimestampAscending'
 	)
 	try:
 		values = response['MetricDataResults'][0]['Values']
