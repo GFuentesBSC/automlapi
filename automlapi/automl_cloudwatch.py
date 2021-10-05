@@ -19,9 +19,7 @@ def find_best_period(start_time, end_time):
 	max_data_points = 100800
 	time_delta = int((end_time-start_time).total_seconds())
 	period = time_delta // max_data_points
-	if period % 60 > 0:
-	    period += (60 - period % 60)
-	period = max(period, 1)
+	period += (60 - period % 60)
 	return period
 
 def update_production_documents_metric(metric_name, project_id, value):
