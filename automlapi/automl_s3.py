@@ -41,6 +41,16 @@ def download_file(bucketName, s3_path, local_path):
 		print(f"download_file : ERROR : {e}")
 		return False
 
+def get_path_size(bucket, path):
+
+    my_bucket = resource_s3.Bucket(bucket)
+    total_size = 0
+
+    for obj in my_bucket.objects.filter(Prefix=path):
+        total_size = total_size + obj.size
+
+    return total_size
+
 ####### DEPRECATED #######
 
 def write_file(filepath, content):
