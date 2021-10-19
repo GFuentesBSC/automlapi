@@ -13,6 +13,9 @@ client_sm = boto3.client('sagemaker',
 						aws_secret_access_key=AWS_SEC_ACC_KEY,
 						region_name=AWS_REGION_NAME)
 
+def get_client():
+	return client_sm
+
 def deploy_version(version_id, model_uri):
 	response = run_model_deployment(version_id, model_uri)
 	return str(response) == "200"

@@ -8,6 +8,7 @@ automlapi\automl_batch.py
 automlapi\automl_cloudwatch.py
 automlapi\automl_codebuild.py
 automlapi\automl_cognito.py
+automlapi\automl_eb.py
 automlapi\automl_ec2.py
 automlapi\automl_ecs.py
 automlapi\automl_elb.py
