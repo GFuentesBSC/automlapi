@@ -84,51 +84,78 @@ def get_production_documents_metric(metric_name, project_id, start_time=None, en
 		print(f"get_production_documents_metric : ERROR : {e}")
 		return 0
 
-# def get_production_documents_live_metric(metric_name, project_id):
-#
-# 	end_time   = datetime.now()
-# 	start_time = end_time - timedelta(seconds=120)
-#
-# 	response = client_cw.get_metric_data(
-# 	    MetricDataQueries=[
-# 	        {
-# 	            'Id': 'query_1',
-# 	            'MetricStat': {
-# 	                'Metric': {
-# 	                    'Namespace': "ProductionDocuments",
-# 	                    'MetricName': metric_name,
-# 	                    'Dimensions': [
-# 	                        {
-# 	                            'Name': 'project_id',
-# 	                            'Value': str(project_id)
-# 	                        },
-# 	                    ]
-# 	                },
-# 	                'Period': 1,
-# 	                'Stat': 'Sum',
-# 	                'Unit': 'Count'
-# 	            },
-# 	            'Label': metric_name,
-# 	        },
-# 	    ],
-# 	    StartTime = start_time,
-# 	    EndTime = end_time,
-# 	    ScanBy = 'TimestampAscending'
-# 	)
-# 	try:
-# 		return response['MetricDataResults'][0]['Values'][-1]
-# 	except Exception as e:
-# 		print(f"get_production_documents_live_metric : ERROR : {e}")
-# 		return 0
-
 def get_production_documents_sent(project_id, start_time=None, end_time=None):
 	return get_production_documents_metric("Sent", project_id, start_time, end_time)
 
 def get_production_documents_finished(project_id, start_time=None, end_time=None):
 	return get_production_documents_metric("Finished", project_id, start_time, end_time)
 
-# def get_production_documents_inProcess(project_id):
-# 	return get_production_documents_live_metric("InProcess", project_id)
-#
-# def get_production_documents_manual(project_id):
-# 	return get_production_documents_live_metric("Manual", project_id)
+def get_project_workload(project_id, start_time=None, end_time=None):
+
+	end_time   = (end_time or datetime.now()).replace(second=0, microsecond=0)
+	start_time = (start_time or end_time-timedelta(hours=24)).replace(second=0, microsecond=0)
+	period     = 60
+
+	response = client_cw.get_metric_data(
+	    MetricDataQueries=[
+	        {
+	            'Id': 'query1',
+	            'MetricStat': {
+	                'Metric': {
+	                    'Namespace': 'Production Orchestrator',
+	                    'MetricName': 'received_requests',
+	                    'Dimensions': [
+	                            {
+	                                'Name': 'project_id',
+	                                'Value': f"{project_id}"
+	                            },
+	                        ]
+	                },
+	                'Period': period,
+	                'Stat': 'Sum',
+	                'Unit': 'Count'
+	            },
+	            'Label': 'Requests received',
+	        },
+	    ],
+	    StartTime=start_time,
+	    EndTime=end_time,
+	    ScanBy='TimestampAscending',
+	)
+	metric_timestamps 	= [x.strftime("%Y-%m-%d %H:%M:%S") for x in response['MetricDataResults'][0]['Timestamps']]
+	metric_values     	= response['MetricDataResults'][0]['Values']
+	all_timestamps		= [(start_time + timedelta(seconds=period * i)).strftime("%Y-%m-%d %H:%M:%S") for i in range(int((end_time-start_time).total_seconds()//period))]
+	all_values 			= [values[timestamps.index(timestamp)] if timestamp in metric_timestamps else 0 for timestamp in all_timestamps]
+	return all_timestamps, all_values
+
+def get_platform_workload(start_time=None, end_time=None):
+
+	end_time   = (end_time or datetime.now()).replace(second=0, microsecond=0)
+	start_time = (start_time or end_time-timedelta(hours=24)).replace(second=0, microsecond=0)
+	period     = 60
+
+	response = client_cw.get_metric_data(
+	    MetricDataQueries=[
+	        {
+	            'Id': 'query1',
+	            'MetricStat': {
+	                'Metric': {
+	                    'Namespace': 'Production Orchestrator',
+	                    'MetricName': 'total_received_requests',
+	                },
+	                'Period': period,
+	                'Stat': 'Sum',
+	                'Unit': 'Count'
+	            },
+	            'Label': 'Requests received',
+	        },
+	    ],
+	    StartTime=start_time,
+	    EndTime=end_time,
+	    ScanBy='TimestampAscending',
+	)
+	metric_timestamps 	= [x.strftime("%Y-%m-%d %H:%M:%S") for x in response['MetricDataResults'][0]['Timestamps']]
+	metric_values     	= response['MetricDataResults'][0]['Values']
+	all_timestamps		= [(start_time + timedelta(seconds=period * i)).strftime("%Y-%m-%d %H:%M:%S") for i in range(int((end_time-start_time).total_seconds()//period))]
+	all_values 			= [values[timestamps.index(timestamp)] if timestamp in metric_timestamps else 0 for timestamp in all_timestamps]
+	return all_timestamps, all_values
