@@ -125,7 +125,7 @@ def get_project_workload(project_id, start_time=None, end_time=None):
 	metric_timestamps 	= [x.strftime("%Y-%m-%d %H:%M:%S") for x in response['MetricDataResults'][0]['Timestamps']]
 	metric_values     	= response['MetricDataResults'][0]['Values']
 	all_timestamps		= [(start_time + timedelta(seconds=period * i)).strftime("%Y-%m-%d %H:%M:%S") for i in range(int((end_time-start_time).total_seconds()//period))]
-	all_values 			= [values[timestamps.index(timestamp)] if timestamp in metric_timestamps else 0 for timestamp in all_timestamps]
+	all_values 			= [metric_values[metric_timestamps.index(timestamp)] if timestamp in metric_timestamps else 0 for timestamp in all_timestamps]
 	return all_timestamps, all_values
 
 def get_platform_workload(start_time=None, end_time=None):
@@ -157,5 +157,5 @@ def get_platform_workload(start_time=None, end_time=None):
 	metric_timestamps 	= [x.strftime("%Y-%m-%d %H:%M:%S") for x in response['MetricDataResults'][0]['Timestamps']]
 	metric_values     	= response['MetricDataResults'][0]['Values']
 	all_timestamps		= [(start_time + timedelta(seconds=period * i)).strftime("%Y-%m-%d %H:%M:%S") for i in range(int((end_time-start_time).total_seconds()//period))]
-	all_values 			= [values[timestamps.index(timestamp)] if timestamp in metric_timestamps else 0 for timestamp in all_timestamps]
+	all_values 			= [metric_values[metric_timestamps.index(timestamp)] if timestamp in metric_timestamps else 0 for timestamp in all_timestamps]
 	return all_timestamps, all_values
