@@ -28,6 +28,7 @@ def stop_version_deployment(version_id):
 		model_name = client_sm.describe_endpoint_config(EndpointConfigName=endpoint_config_name)['ProductionVariants'][0]['ModelName']
 		client_sm.delete_endpoint(EndpointName=endpoint_name)
 		client_sm.delete_model(ModelName=model_name)
+		client_sm.delete_endpoint_config(EndpointConfigName=endpoint_config_name)
 		update_object('version', {'status': 'COMPLETED', 'endpoint': None}, {'id': version_id})
 		return True
 	except Exception as e:
