@@ -1,5 +1,3 @@
-from .automl import init as automlapi_init
-automlapi_init()
 from .automl_batch import *
 from .automl_cloudwatch import *
 from .automl_cognito import *
