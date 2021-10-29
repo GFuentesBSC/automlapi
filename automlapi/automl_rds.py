@@ -357,6 +357,11 @@ def insert_productionPage(imgUri, ocrUri, productionDocument_id):
             f'VALUES ("{imgUri}", "{ocrUri}", {productionDocument_id});'
     return run_insert(query)
 
+def insert_productionLog(eventTime, event, account_id, project_id, request_id):
+    query = f'INSERT INTO neuralplatform_productionlog(eventTime, event, account_id, project_id, request_id) ' + \
+            f'VALUES ({eventTime}, "{event}", {account_id}, {project_id}, {request_id});'
+    return run_insert(query)
+
 def get_pending_and_unblocked_steps():
     # TODO: # OPTIMIZE:  this
     # query1 = 'SELECT neuralplatform_step.id, neuralplatform_request.requestDate FROM neuralplatform_step INNER JOIN ' + \
