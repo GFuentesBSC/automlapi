@@ -357,9 +357,9 @@ def insert_productionPage(imgUri, ocrUri, productionDocument_id):
             f'VALUES ("{imgUri}", "{ocrUri}", {productionDocument_id});'
     return run_insert(query)
 
-def insert_productionLog(eventTime, event, account_id, project_id, request_id):
-    query = f'INSERT INTO neuralplatform_productionlog(eventTime, event, account_id, project_id, request_id) ' + \
-            f'VALUES ({eventTime}, "{event}", {account_id}, {project_id}, {request_id});'
+def insert_productionLog(eventTime, event, account_id, project_id, request_id, eventData):
+    query = f'INSERT INTO neuralplatform_productionlog(eventTime, event, account_id, project_id, request_id, eventData) ' + \
+            f'VALUES ({eventTime}, "{event}", {account_id}, {project_id}, {request_id}, "{json.dumps(eventData)}");'
     return run_insert(query)
 
 def get_pending_and_unblocked_steps():
