@@ -29,6 +29,7 @@ def start_training(project_id: int,
 	return job
 
 def stop_training(version_id: int):
+	stopped_jobs = False
 	for status in ['SUBMITTED', 'PENDING', 'RUNNABLE', 'STARTING', 'RUNNING']:
 		jobs = client_batch.list_jobs(jobQueue='train-queue', jobStatus=status)['jobSummaryList']
 		if jobs:
@@ -36,5 +37,7 @@ def stop_training(version_id: int):
 			for job_description in client_batch.describe_jobs(jobs=jobs_ids)['jobs']:
 			    environment = job_description['container']['environment']
 			    for variable in environment:
-			        if variable['name'] == "VERSION_ID" and variable['value'] == str(version_id):
+			        if variable['name'].upper() == "VERSION_ID" and variable['value'] == str(version_id):
 			            client_batch.terminate_job(jobId=job_description['jobId'], reason='Training aborted')
+						stopped_jobs = True
+	return stopped_jobs
