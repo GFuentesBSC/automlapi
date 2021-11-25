@@ -395,6 +395,12 @@ def classify_productionPage(productionPage_id, class_id):
     run_insert(f"INSERT INTO neuralplatform_productionclassification(classDefinition_id, productionPage_id) VALUES ({class_id}, {productionPage_id});")
     update_object_by_key('productionPage', 'id', productionPage_id, {'tagged': True})
 
+def get_untagged_documents_by_project(project_id, limit=None):
+	query = f"SELECT * FROM neuralplatform_document WHERE project_id = {project_id} AND EXISTS " + \
+            f"(SELECT id FROM neuralplatform_page WHERE neuralplatform_page.document_id = neuralplatform_document.id AND neuralplatform_page.tagged = 0)" + \
+            (f" LIMIT {limit};" if limit else ";")
+	return run_select(query)
+
 def insert_manualStep(result, request_id):
     query = f"INSERT INTO neuralplatform_manualstep(status, result, request_id) " + \
             f"VALUES ('pending', '{json.dumps(result)}', {request_id});"
