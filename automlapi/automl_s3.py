@@ -51,6 +51,22 @@ def get_path_size(bucket, path):
 
     return total_size
 
+def delete_objects(bucket, object_uris):
+	response = client_s3.delete_objects(
+		Bucket=bucket,
+		Delete={
+			'Objects': [{'Key': uri} for uri in object_uris],
+			'Quiet': False
+		}
+	)
+	deleted_objects = [deleted_object['Key'] for deleted_object in response['Deleted']]
+	return set(deleted_objects) == set(object_uris)
+
+def delete_all_project_files(bucket_name, project_name):
+	bucket = resource_s3.Bucket(bucket_name)
+	for key in bucket.objects.filter(Prefix=f'{project_name}/'):
+		key.delete()
+
 ####### DEPRECATED #######
 
 def write_file(filepath, content):
