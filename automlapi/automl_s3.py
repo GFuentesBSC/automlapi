@@ -67,6 +67,11 @@ def delete_all_project_files(bucket_name, project_name):
 	for key in bucket.objects.filter(Prefix=f'{project_name}/'):
 		key.delete()
 
+def delete_all_version_files(bucket_name, project_name, version_id):
+	bucket = resource_s3.Bucket(bucket_name)
+	for key in bucket.objects.filter(Prefix=f'{project_name}/versions/{version_id}/'):
+		key.delete()
+
 ####### DEPRECATED #######
 
 def write_file(filepath, content):
