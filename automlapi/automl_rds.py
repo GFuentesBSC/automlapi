@@ -387,16 +387,16 @@ def get_pending_and_unblocked_steps():
             unblocked_steps += list(filter(lambda x: x['stepDefinition_id'] in unblocked_stepDefinitions, pending_steps))
     return unblocked_steps
 
-def classify_page(page_id, class_id):
+def classify_page(page_id, class_id, manual=False):
     if run_exists(f"SELECT DISTINCT 1 FROM neuralplatform_classification WHERE page_id = {page_id};"):
         run_delete(f"DELETE FROM neuralplatform_classification WHERE page_id = {page_id};")
-    run_insert(f"INSERT INTO neuralplatform_classification(classDefinition_id, page_id) VALUES ({class_id}, {page_id});")
+    run_insert(f"INSERT INTO neuralplatform_classification(classDefinition_id, page_id, manual) VALUES ({class_id}, {page_id}, {manual});")
     update_object_by_key('page', 'id', page_id, {'tagged': True})
 
-def classify_productionPage(productionPage_id, class_id):
+def classify_productionPage(productionPage_id, class_id, , manual=False):
     if run_exists(f"SELECT DISTINCT 1 FROM neuralplatform_productionclassification WHERE productionPage_id = {productionPage_id};"):
         run_delete(f"DELETE FROM neuralplatform_productionclassification WHERE productionPage_id = {productionPage_id};")
-    run_insert(f"INSERT INTO neuralplatform_productionclassification(classDefinition_id, productionPage_id) VALUES ({class_id}, {productionPage_id});")
+    run_insert(f"INSERT INTO neuralplatform_productionclassification(classDefinition_id, productionPage_id, manual) VALUES ({class_id}, {productionPage_id}, {manual});")
     update_object_by_key('productionPage', 'id', productionPage_id, {'tagged': True})
 
 def get_untagged_documents_by_project(project_id, limit=None):
