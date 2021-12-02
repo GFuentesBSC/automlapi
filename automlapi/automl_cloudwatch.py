@@ -95,7 +95,6 @@ def get_project_workload(project_id, start_time=None, end_time=None):
 	end_time   = (end_time or datetime.now()).replace(second=0, microsecond=0)
 	start_time = (start_time or end_time-timedelta(hours=24)).replace(second=0, microsecond=0)
 	period     = 60
-
 	response = client_cw.get_metric_data(
 	    MetricDataQueries=[
 	        {
