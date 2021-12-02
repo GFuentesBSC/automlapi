@@ -71,6 +71,7 @@ def run_insert(query):
 	return pk
 
 def run_update(query):
+    rows_updated = 0
     try:
         db = mysql.connect(host=BD_HOST,
                 database=BD_DATABASE,
@@ -80,14 +81,15 @@ def run_update(query):
         cursor = db.cursor()
         if isinstance(query, list):
             for subquery in query:
-                cursor.execute(subquery)
+                rows_updated += cursor.execute(subquery)
         else:
-            cursor.execute(query)
+            rows_updated += cursor.execute(query)
         db.commit()
     except Exception as e:
         print("run_update - ERROR " + str(e))
     finally:
         db.close()
+        return rows_updated
 
 def run_delete(query):
 	try:
@@ -186,7 +188,7 @@ def update_object_by_conditions(objectName, fields, conditions):
     else:
         parsed_conditions = parsed_conditions[:-4]
     query = f'UPDATE neuralplatform_{objectName.lower()} SET {parsed_fields} WHERE {parsed_conditions};'
-    run_update(query)
+    return run_update(query)
 
 def get_pagesInfo_of_request(request_id):
     pagesInfo = {"pagesInfo": []}
@@ -219,7 +221,9 @@ def update_object_by_key(objectName, key='id', keyValue=1, fields=None):
         else:
             changes = changes[:-2]
         query = f'UPDATE neuralplatform_{objectName.lower()} SET {changes} WHERE {key} {operator} {keyValue};'
-        run_update(query)
+        return run_update(query)
+    else:
+        return 0
 
 def exists_object(objectName, conditions):
     parsed_conditions = ""
