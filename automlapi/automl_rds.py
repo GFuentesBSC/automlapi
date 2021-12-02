@@ -393,7 +393,7 @@ def classify_page(page_id, class_id, manual=False):
     run_insert(f"INSERT INTO neuralplatform_classification(classDefinition_id, page_id, manual) VALUES ({class_id}, {page_id}, {manual});")
     update_object_by_key('page', 'id', page_id, {'tagged': True})
 
-def classify_productionPage(productionPage_id, class_id, , manual=False):
+def classify_productionPage(productionPage_id, class_id, manual=False):
     if run_exists(f"SELECT DISTINCT 1 FROM neuralplatform_productionclassification WHERE productionPage_id = {productionPage_id};"):
         run_delete(f"DELETE FROM neuralplatform_productionclassification WHERE productionPage_id = {productionPage_id};")
     run_insert(f"INSERT INTO neuralplatform_productionclassification(classDefinition_id, productionPage_id, manual) VALUES ({class_id}, {productionPage_id}, {manual});")
