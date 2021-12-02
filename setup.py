@@ -1,14 +1,17 @@
 from distutils.core import setup
+
+VERSION = "0.148"
+
 setup(
   name = 'automlapi',
   packages = ['automlapi'],
-  version = '0.147',
+  version = VERSION,
   license='MIT',
   description = 'api for the AutoML project',
   author = 'Raul Garcia',
   author_email = 'raulgfuentes97@gmail.com',
   url = 'https://github.com/GFuentesBSC/automlapi',
-  download_url = f'https://github.com/GFuentesBSC/automlapi/archive/v{version}.tar.gz',
+  download_url = f'https://github.com/GFuentesBSC/automlapi/archive/v{VERSION}.tar.gz',
   keywords = ['AUTOML', 'BOTO3', 'AWS'],   # Keywords that define your package best
   install_requires=[
           'tqdm',
