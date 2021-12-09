@@ -1,6 +1,6 @@
 from distutils.core import setup
 
-VERSION = "0.148"
+VERSION = "0.149"
 
 setup(
   name = 'automlapi',

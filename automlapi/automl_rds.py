@@ -399,7 +399,7 @@ def classify_productionPage(productionPage_id, class_id, manual=False):
     run_insert(f"INSERT INTO neuralplatform_productionclassification(classDefinition_id, productionPage_id, manual) VALUES ({class_id}, {productionPage_id}, {manual});")
     update_object_by_key('productionPage', 'id', productionPage_id, {'tagged': True})
 
-def get_untagged_documents_by_project(project_id, limit=None):
+def get_train_untagged_documents_by_project(project_id, limit=None):
 	query = f"SELECT * FROM neuralplatform_document WHERE project_id = {project_id} AND EXISTS " + \
             f"(SELECT id FROM neuralplatform_page WHERE neuralplatform_page.document_id = neuralplatform_document.id AND neuralplatform_page.tagged = 0)" + \
             (f" LIMIT {limit};" if limit else ";")
